@@ -44,7 +44,7 @@ class Arena
     void dilateErode(cv::Mat &image)
     {
         cv::Mat kernel = cv::getStructuringElement(cv::MORPH_RECT,
-                                                   cv::Size((4 * 2) + 1, (4 * 2) + 1));
+                                                   cv::Size((5 * 2) + 1, (5 * 2) + 1));
         cv::dilate(image, image, kernel);
         cv::erode(image, image, kernel);
     }
@@ -59,6 +59,7 @@ class Arena
         cv::inRange(topView_hsv, cv::Scalar(181 - 55, 20, 20), cv::Scalar(255, 255, 255), red_mask);
         if (display)
             cv::imshow("red_mask", red_mask);
+        dilateErode(red_mask);
         dilateErode(red_mask);
 
         std::vector<std::vector<cv::Point>> contours, approximation;
@@ -107,7 +108,7 @@ class Arena
 
         for (int i = 0; i < contours.size(); ++i)
         {
-            approxPolyDP(contours[i], approx_curve, 20, true);
+            approxPolyDP(contours[i], approx_curve, 5, true);
             approximation = {approx_curve};
 
             // if (display)
