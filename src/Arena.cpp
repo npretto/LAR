@@ -209,7 +209,16 @@ class Arena
             cv::Point2f(width, 0),
             cv::Point2f(width, height),
             cv::Point2f(0, height),
+
         };
+
+        //detect if the image is "rotated"
+        if (cv::norm(arena_approx.at(0) - arena_approx.at(1)) > cv::norm(arena_approx.at(1) - arena_approx.at(2)))
+        {
+            cout << "YES" << endl;
+            desidered.push_back(desidered.at(0));
+            desidered.erase(desidered.begin());
+        }
 
         vector<Point2f> floats(arena_approx.begin(), arena_approx.end());
 
