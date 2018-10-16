@@ -8,7 +8,6 @@
 #include "./src/CalibratedCamera.cpp"
 #include "./src/Arena.cpp"
 
-using namespace cv;
 using namespace std;
 
 const String CALIBRATION_PATH = "./data/calibration";
@@ -41,6 +40,7 @@ int main(int argc, char **argv)
   vector<String> fn;                 // std::string in opencv2.4, but cv::String in 3.0
   cv::glob("./data/map", fn, false); //read file names inside the folder
   cout << "folder letta" << endl;
+
   for (int i = 0; i < fn.size(); i++)
   {
     auto file = fn.at(i);
@@ -51,7 +51,7 @@ int main(int argc, char **argv)
     arena.parseImage(image);
 
     cv::imshow("Arena", arena.topView);
-
+    cv::imshow("Arena parsed", arena.topViewAnnotated);
     waitKey(0);
   }
 

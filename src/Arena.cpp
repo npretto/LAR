@@ -24,19 +24,117 @@ class Arena
     }
 
   public:
-    cv::Mat topView;
+    cv::Mat topView; //clean top-view, as in input
+    cv::Mat topView_hsv;
 
-    void parseImage(cv::Mat input)
+    cv::Mat topViewAnnotated; //top-view with stuff on it
+
+    std::vector<std::vector<cv::Point>> obstacles;
+    std::vector<cv::Point> goal;
+
+    void parseImage(cv::Mat input, bool display = false)
     {
+
         getTopView(input);
+
+        findObstacles(display);
+        findGoal(display /*|| true*/);
+    }
+
+    void dilateErode(cv::Mat &image)
+    {
+        cv::Mat kernel = cv::getStructuringElement(cv::MORPH_RECT,
+                                                   cv::Size((4 * 2) + 1, (4 * 2) + 1));
+        cv::dilate(image, image, kernel);
+        cv::erode(image, image, kernel);
+    }
+
+    void findObstacles(bool display = false)
+    {
+        obstacles.clear();
+
+        cv::Mat red_mask;
+        cv::cvtColor(topView, topView_hsv, cv::COLOR_BGR2HSV);
+
+        cv::inRange(topView_hsv, cv::Scalar(181 - 55, 20, 20), cv::Scalar(255, 255, 255), red_mask);
+        if (display)
+            cv::imshow("red_mask", red_mask);
+        dilateErode(red_mask);
+
+        std::vector<std::vector<cv::Point>> contours, approximation;
+
+        cv::findContours(red_mask, contours, cv::RETR_LIST,
+                         cv::CHAIN_APPROX_SIMPLE);
+
+        for (int i = 0; i < contours.size(); ++i)
+        {
+            std::vector<cv::Point> approx_curve;
+
+            approxPolyDP(contours[i], approx_curve, 5, true);
+            approximation = {approx_curve};
+
+            obstacles.push_back(approx_curve);
+        }
+
+        drawContours(topViewAnnotated, obstacles, -1, cv::Scalar(255, 255, 255), 3, cv::LINE_AA);
+
+        if (display)
+        {
+            cv::imshow("red_mask_eroded", red_mask);
+        }
+    }
+
+    void findGoal(bool display = false)
+    {
+
+        cv::Mat blue_mask;
+
+        cv::inRange(topView_hsv, cv::Scalar(140 - 55, 100, 50), cv::Scalar(140 + 25, 255, 255), blue_mask);
+
+        if (display)
+            cv::imshow("blue_mask", blue_mask);
+
+        dilateErode(blue_mask);
+
+        std::vector<std::vector<cv::Point>> contours, approximation;
+
+        cv::findContours(blue_mask, contours, cv::RETR_LIST,
+                         cv::CHAIN_APPROX_SIMPLE);
+
+        // drawContours(topViewAnnotated, contours, 0, cv::Scalar(255, 20, 20), 3, cv::LINE_AA);
+
+        std::vector<cv::Point> approx_curve;
+
+        for (int i = 0; i < contours.size(); ++i)
+        {
+            approxPolyDP(contours[i], approx_curve, 20, true);
+            approximation = {approx_curve};
+
+            // if (display)
+            // drawContours(contours_img, approximation, -1, getColor(), 2, cv::LINE_AA);
+
+            double area = contourArea(contours[i]);
+
+            if (area > 40)
+            {
+                goal = approx_curve;
+            }
+        }
+
+        std::vector<std::vector<cv::Point>> a = {approx_curve};
+
+        drawContours(topViewAnnotated, a, -1, cv::Scalar(20, 20, 255), 2, cv::LINE_AA);
+
+        if (display)
+            cv::imshow("blue_mask_eroded", blue_mask);
     }
 
     void getTopView(cv::Mat input, bool debugView = false)
     {
-        cv::Mat hsv_img, black_mask;
-        cv::cvtColor(input, hsv_img, cv::COLOR_BGR2HSV);
+        cv::Mat topView_hsv, black_mask;
+        cv::cvtColor(input, topView_hsv, cv::COLOR_BGR2HSV);
 
-        cv::inRange(hsv_img, cv::Scalar(0, 0, 0), cv::Scalar(180, 255, 50), black_mask);
+        cv::inRange(topView_hsv, cv::Scalar(0, 0, 0), cv::Scalar(180, 255, 50), black_mask);
 
         // cv::imshow("BLACK_filter", black_mask);
 
@@ -118,6 +216,10 @@ class Arena
         cv::Mat transform = getPerspectiveTransform(floats, desidered);
 
         cv::warpPerspective(input, topView, transform, cv::Size(width, height));
+
+        topViewAnnotated = topView.clone();
+
+        cv::cvtColor(topView, topView_hsv, cv::COLOR_BGR2HSV);
 
         return;
     }
