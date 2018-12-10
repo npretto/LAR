@@ -1,4 +1,5 @@
 
+#include <tesseract/baseapi.h> //this has to stay on top otherwise the console will be full of errors :(
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -7,8 +8,6 @@
 #include <string>
 #include "./src/CalibratedCamera.cpp"
 #include "./src/Arena.cpp"
-
-using namespace std;
 
 const String CALIBRATION_PATH = "./data/calibration";
 const bool calibrate = false;

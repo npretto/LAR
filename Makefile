@@ -1,7 +1,7 @@
 TARGET=main.out
 CXX=g++
-CXXFLAGS=`pkg-config --cflags opencv` -std=c++11 -O2
-LDLIBS=`pkg-config --libs opencv`
+CXXFLAGS=`pkg-config --cflags tesseract opencv` -std=c++11 -O2
+LDLIBS=`pkg-config --libs tesseract opencv`
 
 SRCS:=$(wildcard *.cpp)
 OBJS:=$(patsubst %.cpp,%.o,$(SRCS))

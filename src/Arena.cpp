@@ -5,15 +5,15 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
 #include <string>
-
-using namespace cv;
-using namespace std;
-
+#include "./DigitOCR.cpp"
+#include "./utils.cpp"
 class Arena
 {
   private:
     int width = 500;
     int height = 750;
+
+    DigitOCR ocr;
 
     cv::Scalar getColor() //get "random" color to draw
     {
@@ -31,6 +31,7 @@ class Arena
 
     std::vector<std::vector<cv::Point>> obstacles;
     std::vector<cv::Point> goal;
+    std::vector<std::tuple<Vec3f, char>> pois;
 
     void parseImage(cv::Mat input, bool display = false)
     {
@@ -39,14 +40,50 @@ class Arena
 
         findObstacles(display);
         findGoal(display /*|| true*/);
+        findPOIs(display || true);
     }
 
-    void dilateErode(cv::Mat &image)
+    void findPOIs(bool display = false)
     {
-        cv::Mat kernel = cv::getStructuringElement(cv::MORPH_RECT,
-                                                   cv::Size((5 * 2) + 1, (5 * 2) + 1));
-        cv::dilate(image, image, kernel);
-        cv::erode(image, image, kernel);
+        obstacles.clear();
+
+        cv::Mat green_mask;
+
+        const int color = 60;
+        cv::inRange(topView_hsv, cv::Scalar(color - 25, 10, 10), cv::Scalar(color + 25, 255, 255), green_mask);
+        if (display)
+            cv::imshow("green_mask", green_mask);
+
+        u::erode(green_mask, 8);
+        u::dilate(green_mask, 5);
+
+        std::vector<Vec3f> circles;
+
+        cv::HoughCircles(green_mask, circles, HOUGH_GRADIENT, 1, 30, 100, 10, 30, 60);
+
+        for (size_t i = 0; i < circles.size(); i++)
+        {
+            Vec3i c = circles[i];
+            // cout << c[2] << endl;
+            const int margin = 2; // margin to add to the area
+            circle(topViewAnnotated, Point(c[0], c[1]), c[2], Scalar(0, 0, 255), 3, LINE_AA);
+            circle(topViewAnnotated, Point(c[0], c[1]), 2, Scalar(0, 255, 0), 3, LINE_AA);
+
+            cv::Rect r(c[0] - c[2] - margin, c[1] - c[2] - margin, (c[2] + margin) * 2, (c[2] + margin) * 2);
+            cv::Mat digitArea = topView(r);
+
+            char *digit = ocr.parse(digitArea);
+            
+            pois.push_back( std::make_tuple(c, *digit));
+
+
+            cv::waitKey();
+        }
+
+        if (display)
+        {
+            cv::imshow("green_mask_eroded", green_mask);
+        }
     }
 
     void findObstacles(bool display = false)
@@ -59,8 +96,8 @@ class Arena
         cv::inRange(topView_hsv, cv::Scalar(181 - 55, 20, 20), cv::Scalar(255, 255, 255), red_mask);
         if (display)
             cv::imshow("red_mask", red_mask);
-        dilateErode(red_mask);
-        dilateErode(red_mask);
+        u::dilateErode(red_mask);
+        u::dilateErode(red_mask);
 
         std::vector<std::vector<cv::Point>> contours, approximation;
 
@@ -95,7 +132,7 @@ class Arena
         if (display)
             cv::imshow("blue_mask", blue_mask);
 
-        dilateErode(blue_mask);
+        u::dilateErode(blue_mask);
 
         std::vector<std::vector<cv::Point>> contours, approximation;
 
