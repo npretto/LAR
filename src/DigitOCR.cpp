@@ -7,6 +7,7 @@
 #include <iostream>
 #include <string>
 #include "./utils.cpp"
+#include "../main.h"
 
 class DigitOCR
 {

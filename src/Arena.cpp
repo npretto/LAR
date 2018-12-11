@@ -7,6 +7,10 @@
 #include <string>
 #include "./DigitOCR.cpp"
 #include "./utils.cpp"
+
+using namespace std;
+using namespace cv;
+
 class Arena
 {
   private:
@@ -31,7 +35,7 @@ class Arena
 
     std::vector<std::vector<cv::Point>> obstacles;
     std::vector<cv::Point> goal;
-    std::vector<std::tuple<Vec3f, char>> pois;
+    std::vector<std::tuple<Vec3f, char>> POIs;
 
     void parseImage(cv::Mat input, bool display = false)
     {
@@ -40,13 +44,11 @@ class Arena
 
         findObstacles(display);
         findGoal(display /*|| true*/);
-        findPOIs(display || true);
+        findPOIs(display /*|| true */);
     }
 
     void findPOIs(bool display = false)
     {
-        obstacles.clear();
-
         cv::Mat green_mask;
 
         const int color = 60;
@@ -64,20 +66,18 @@ class Arena
         for (size_t i = 0; i < circles.size(); i++)
         {
             Vec3i c = circles[i];
-            // cout << c[2] << endl;
+
             const int margin = 2; // margin to add to the area
-            circle(topViewAnnotated, Point(c[0], c[1]), c[2], Scalar(0, 0, 255), 3, LINE_AA);
-            circle(topViewAnnotated, Point(c[0], c[1]), 2, Scalar(0, 255, 0), 3, LINE_AA);
 
             cv::Rect r(c[0] - c[2] - margin, c[1] - c[2] - margin, (c[2] + margin) * 2, (c[2] + margin) * 2);
             cv::Mat digitArea = topView(r);
 
             char *digit = ocr.parse(digitArea);
-            
-            pois.push_back( std::make_tuple(c, *digit));
 
+            POIs.push_back(std::make_tuple(c, *digit));
 
-            cv::waitKey();
+            if (STOP_AT_EVERY_OCR)
+                cv::waitKey();
         }
 
         if (display)
@@ -113,8 +113,6 @@ class Arena
 
             obstacles.push_back(approx_curve);
         }
-
-        drawContours(topViewAnnotated, obstacles, -1, cv::Scalar(255, 255, 255), 3, cv::LINE_AA);
 
         if (display)
         {
@@ -238,8 +236,6 @@ class Arena
 
         std::vector<std::vector<cv::Point>> aa = {arena_approx};
         std::vector<std::vector<cv::Point>> bb = {arena};
-        drawContours(contours_img, aa, -1, cv::Scalar(255, 255, 255), 2, cv::LINE_AA);
-        drawContours(contours_img, bb, 0, cv::Scalar(0, 0, 255), 1, cv::LINE_AA);
 
         // "flatten" the map to a rectangular image
         std::vector<cv::Point2f> desidered = {
@@ -269,5 +265,33 @@ class Arena
         cv::cvtColor(topView, topView_hsv, cv::COLOR_BGR2HSV);
 
         return;
+    }
+
+    void drawMapOn(cv::Mat &image)
+    {
+
+        //DRAW POIs
+        for (size_t i = 0; i < POIs.size(); i++)
+        {
+            Vec3i c = get<0>(POIs[i]);
+            // cout << c[2] << endl;
+            const int margin = 2; // margin to add to the area
+            circle(image, Point(c[0], c[1]), c[2], Scalar(20, 255, 20), 3, LINE_AA);
+            circle(image, Point(c[0], c[1]), 2, Scalar(0, 255, 0), 3, LINE_AA);
+
+            char number = get<1>(POIs[i]);
+            putText(image, string(1, number), cvPoint(c[0], c[1]),
+                    FONT_HERSHEY_COMPLEX_SMALL, 3, cvScalar(255, 255, 255), 4, CV_AA);
+        }
+
+        //DRAW OBSTACLES
+        cout << ">>>>" << endl;
+        cout << obstacles.size() << endl;
+        drawContours(image, obstacles, -1, cv::Scalar(20, 20, 255), 3, cv::LINE_AA);
+
+        //DRAW EXIT
+        std::vector<std::vector<cv::Point>> a = {goal};
+
+        drawContours(image, a, -1, cv::Scalar(255, 20, 20), 3, cv::LINE_AA);
     }
 };

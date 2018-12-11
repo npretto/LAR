@@ -10,7 +10,9 @@
 #include "./src/Arena.cpp"
 
 const String CALIBRATION_PATH = "./data/calibration";
+
 const bool calibrate = false;
+bool STOP_AT_EVERY_OCR = false;
 
 int main(int argc, char **argv)
 {
@@ -50,7 +52,12 @@ int main(int argc, char **argv)
     arena.parseImage(image);
 
     cv::imshow("Arena", arena.topView);
-    cv::imshow("Arena parsed", arena.topViewAnnotated);
+
+    // cv::Mat display = arena.topView;
+    cv::Mat display(arena.topView.rows, arena.topView.cols, CV_8UC3, Scalar(100, 100, 100));
+    arena.drawMapOn(display);
+
+    cv::imshow("Arena parsed", display);
     waitKey(0);
   }
 

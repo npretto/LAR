@@ -1,0 +1,1 @@
+extern bool STOP_AT_EVERY_OCR;
