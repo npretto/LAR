@@ -37,6 +37,9 @@ class Arena
     std::vector<cv::Point> goal;
     std::vector<std::tuple<Vec3f, char>> POIs;
 
+    float getWidth() { return topView.cols; }
+    float getHeight() { return topView.rows; }
+
     void parseImage(cv::Mat input, bool display = false)
     {
 

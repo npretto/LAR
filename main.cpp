@@ -15,6 +15,9 @@ const String CALIBRATION_PATH = "./data/calibration";
 const bool calibrate = false;
 bool STOP_AT_EVERY_OCR = false;
 
+float safetyDistance = 5;
+float robotRadius = 20;
+
 int main(int argc, char **argv)
 {
 
