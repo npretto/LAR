@@ -8,6 +8,7 @@
 #include <string>
 #include "./src/CalibratedCamera.cpp"
 #include "./src/Arena.cpp"
+#include "./src/PathFinder.cpp"
 
 const String CALIBRATION_PATH = "./data/calibration";
 
@@ -58,6 +59,13 @@ int main(int argc, char **argv)
     arena.drawMapOn(display);
 
     cv::imshow("Arena parsed", display);
+
+    PathFinder pf(arena);
+
+    pf.drawMapOn(display);
+
+    cv::imshow("Arena parsed", display);
+
     waitKey(0);
   }
 

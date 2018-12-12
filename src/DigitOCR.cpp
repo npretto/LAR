@@ -1,3 +1,4 @@
+#pragma once
 #include <tesseract/baseapi.h> // Tesseract headers
 #include <leptonica/allheaders.h>
 #include <opencv2/core/core.hpp>

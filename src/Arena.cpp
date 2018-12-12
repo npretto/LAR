@@ -1,4 +1,4 @@
-
+#pragma once
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -276,7 +276,7 @@ class Arena
             Vec3i c = get<0>(POIs[i]);
             // cout << c[2] << endl;
             const int margin = 2; // margin to add to the area
-            circle(image, Point(c[0], c[1]), c[2], Scalar(20, 255, 20), 3, LINE_AA);
+            circle(image, Point(c[0], c[1]), c[2], Scalar(20, 255, 20), 1, LINE_AA);
             circle(image, Point(c[0], c[1]), 2, Scalar(0, 255, 0), 3, LINE_AA);
 
             char number = get<1>(POIs[i]);
@@ -287,7 +287,7 @@ class Arena
         //DRAW OBSTACLES
         cout << ">>>>" << endl;
         cout << obstacles.size() << endl;
-        drawContours(image, obstacles, -1, cv::Scalar(20, 20, 255), 3, cv::LINE_AA);
+        drawContours(image, obstacles, -1, cv::Scalar(20, 20, 180), 3, cv::LINE_AA);
 
         //DRAW EXIT
         std::vector<std::vector<cv::Point>> a = {goal};
