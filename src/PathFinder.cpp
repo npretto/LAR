@@ -27,7 +27,13 @@ struct GraphNode {
   bool ok;
   vector<Edge *> links;
   float cost;
-  bool operator<(const GraphNode &rhs) const { return cost > rhs.cost; }
+  bool operator<(const GraphNode &rhs) const { return cost < rhs.cost; }
+};
+
+struct Compare {
+  bool operator()(const GraphNode *a, const GraphNode *b) const {
+    return a->cost > b->cost;
+  }
 };
 
 float heuristic(GraphNode *start, GraphNode *end) {
@@ -76,8 +82,9 @@ class PathFinder {
           Point distancePoint = p - o.center;
           float distance = cv::norm(distancePoint);
           if (distance > o.radius) {  // outside the obstacle
-            // forceSum += 1 / (distance - o.radius) * distancePoint;
-          } else {  // inside the obstacle
+                                      // forceSum += 1 / (distance - o.radius) *
+                                      // distancePoint;
+          } else {                    // inside the obstacle
             if (distance < o.innerRadius) {
               ok = false;
               continue;
@@ -130,7 +137,7 @@ class PathFinder {
       obstacles.push_back(poligonToCircle(polygon));
     }
     createNodes(30);
-    createEdges(40);
+    createEdges(45);
   }
 
   void drawMapOn(const cv::Mat &image) {
@@ -164,7 +171,7 @@ class PathFinder {
     std::unordered_map<GraphNode *, GraphNode *> came_from;
     std::unordered_map<GraphNode *, float> cost_so_far;
 
-    priority_queue<GraphNode *> frontier;
+    priority_queue<GraphNode *, vector<GraphNode *>, Compare> frontier;
 
     start->cost = 0;
     frontier.push(start);
@@ -180,6 +187,9 @@ class PathFinder {
         break;
       }
       for (Edge *link : current->links) {
+        line(display, link->a->center, link->b->center, Scalar(120, 120, 120),
+             2);
+
         GraphNode *next = link->a == current ? link->b : link->a;
 
         float new_cost = cost_so_far[current] + link->cost;

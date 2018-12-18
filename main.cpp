@@ -22,17 +22,23 @@ CalibratedCamera camera;
 Arena arena;
 PathFinder pf;
 
-static void onMouse(int event, int x, int y, int, void *) {
-  vector<GraphNode *> p = pf.testClick(x, y);
-  cv::Mat display(arena.topView.rows, arena.topView.cols, CV_8UC3,
-                  Scalar(100, 100, 100));
+cv::Mat display;
+
+static void click(int x, int y) {
+  cv::Mat display2(arena.topView.rows, arena.topView.cols, CV_8UC3,
+                   Scalar(100, 100, 100));
+  display = display2;
+
   arena.drawMapOn(display);
+
+  vector<GraphNode *> p = pf.testClick(x, y);
   pf.drawMapOn(display);
   pf.drawPath(display, p);
   cv::imshow("Arena parsed", display);
 
   cout << "." << endl;
 }
+static void onMouse(int event, int x, int y, int, void *) { click(x, y); }
 
 int main(int argc, char **argv) {
   if (calibrate) {
@@ -76,7 +82,8 @@ int main(int argc, char **argv) {
     cv::imshow("Arena parsed", display);
 
     setMouseCallback("Arena parsed", onMouse, 0);
-    // pf.testClick(500, 600);
+
+    click(300, 500);
 
     waitKey(0);
     for (;;) {
