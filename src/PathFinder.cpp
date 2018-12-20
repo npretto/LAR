@@ -112,7 +112,8 @@ class PathFinder {
 
         float dist = cv::norm(a->center - b->center);
 
-        if (dist < distance) {
+        if (dist < distance &&
+            !lineIntersectsWithObstacles(a->center, b->center)) {
           Edge *e = new Edge{a, b, heuristic(a, b)};
           a->links.push_back(e);
           b->links.push_back(e);
@@ -137,9 +138,9 @@ class PathFinder {
       obstacles.push_back(poligonToCircle(polygon));
     }
 
-    const float dist = 20;
+    const float dist = 50;
     createNodes(dist);
-    createEdges(dist * 1.5);
+    createEdges(dist * 3.17);
   }
 
   void drawMapOn(const cv::Mat &image) {
@@ -261,8 +262,8 @@ class PathFinder {
     for (CircumscribedObstacle c : obstacles) {
       const Point p = c.center;
 
-      if (cv::norm(a - p) < (c.radius + 2)) return true;
-      if (cv::norm(b - p) < (c.radius + 2)) return true;
+      if (cv::norm(a - p) < (c.radius)) return true;
+      if (cv::norm(b - p) < (c.radius)) return true;
 
       const float x1 = a.x;
       const float x2 = b.x;
