@@ -136,8 +136,10 @@ class PathFinder {
     for (auto polygon : arena.obstacles) {
       obstacles.push_back(poligonToCircle(polygon));
     }
-    createNodes(30);
-    createEdges(45);
+
+    const float dist = 20;
+    createNodes(dist);
+    createEdges(dist * 1.5);
   }
 
   void drawMapOn(const cv::Mat &image) {
@@ -238,11 +240,57 @@ class PathFinder {
 
   vector<GraphNode *> testClick(int x, int y) {
     cout << x << "  " << y << endl;
+    const Point a(300, 350);
 
     GraphNode *start = getClosestNode(Point(x, y));
-    GraphNode *end = getClosestNode(Point(200, 300));
+    GraphNode *end = getClosestNode(a);
     vector<GraphNode *> path = getPath(start, end);
 
+    const Point b(x, y);
+    const auto color = lineIntersectsWithObstacles(a, b)
+                           ? Scalar(10, 10, 255)
+                           : Scalar(120, 120, 120);
+
+    line(display, a, b, color, 3);
+
     return path;
+  }
+
+  // thanks to http://paulbourke.net/geometry/circlesphere/
+  bool lineIntersectsWithObstacles(const Point &a, const Point &b) {
+    for (CircumscribedObstacle c : obstacles) {
+      const Point p = c.center;
+
+      if (cv::norm(a - p) < (c.radius + 2)) return true;
+      if (cv::norm(b - p) < (c.radius + 2)) return true;
+
+      const float x1 = a.x;
+      const float x2 = b.x;
+      const float x3 = p.x;
+      const float y1 = a.y;
+      const float y2 = b.y;
+      const float y3 = p.y;
+
+      float aa = pow(x2 - x1, 2) + pow(y2 - y1, 2);
+      float bb = 2 * ((x2 - x1) * (x1 - x3) + (y2 - y1) * (y1 - y3));
+      float cc = pow(x3, 2) + pow(y3, 2) + pow(x1, 2) + pow(y1, 2) -
+                 2 * (x3 * x1 + y3 * y1) - pow(c.radius, 2);
+
+      float bb4ac = bb * bb - 4 * aa * cc;
+      if (bb4ac < 0) {
+        // no contacts between line and circle
+        continue;
+      }
+
+      const float u = ((x3 - x1) * (x2 - x1) + (y3 - y1) * (y2 - y1)) /
+                      ((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+      if (u >= 0 && u <= 1) {
+        // closest point of the line to the center is between a and b
+        // this is still false if i don't "go over" the center
+        // that's why i also check (at the start) if a or b are in the circle
+        return true;
+      }
+    }
+    return false;
   }
 };
