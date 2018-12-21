@@ -153,8 +153,10 @@ class PathFinder {
     }
 
     // edges
-    for (Edge *e : edges) {
-      line(image, e->a->center, e->b->center, Scalar(120, 120, 120), 1);
+    if (DRAW_EDGES) {
+      for (Edge *e : edges) {
+        line(image, e->a->center, e->b->center, Scalar(120, 120, 120), 1);
+      }
     }
 
     // nodes
@@ -190,8 +192,10 @@ class PathFinder {
         break;
       }
       for (Edge *link : current->links) {
-        line(display, link->a->center, link->b->center, Scalar(120, 120, 120),
-             2);
+        if (DRAW_VISITED_EDGES) {
+          line(display, link->a->center, link->b->center, Scalar(120, 120, 120),
+               2);
+        }
 
         GraphNode *next = link->a == current ? link->b : link->a;
 

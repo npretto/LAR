@@ -14,6 +14,13 @@ const String CALIBRATION_PATH = "./data/calibration";
 
 const bool calibrate = false;
 bool STOP_AT_EVERY_OCR = false;
+bool DRAW_EDGES = false;
+bool DRAW_VISITED_EDGES = false;
+float MAP_HEIGHT = 150;  // 150cm
+float MAP_WIDTH = 100;   // 100cm
+
+float pixelToCm(float pixels) { return pixels / Arena::width * MAP_WIDTH; }
+float cmToPixels(float cm) { return cm / MAP_WIDTH * Arena::width; }
 
 float safetyDistance = 5;
 float robotRadius = 20;
