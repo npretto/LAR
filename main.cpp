@@ -96,7 +96,7 @@ int main(int argc, char **argv) {
 
     setMouseCallback("Arena parsed", onMouse, 0);
 
-    click(300, 500);
+    click(100, 600);
 
     waitKey(0);
     for (;;) {

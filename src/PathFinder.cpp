@@ -218,7 +218,7 @@ class PathFinder {
       path.push_back(prev);
       n = prev;
     }
-
+    reverse(begin(path), end(path));
     return path;
   }
 
@@ -227,8 +227,9 @@ class PathFinder {
       auto a = path[i]->center;
       auto b = path[i + 1]->center;
 
-      line(image, path[i]->center, path[i + 1]->center, Scalar(120, 120, 255),
-           3);
+      line(image, path[i]->center, path[i + 1]->center,
+           Scalar(rand() * 120, rand() * 120, rand() * 255), 3);
+
     }
   }
 
@@ -246,7 +247,7 @@ class PathFinder {
     return closest;
   }
 
-  vector<Point3f> nodesToDubins(vector<GraphNode *> &nodes) {
+  vector<Point3f> nodesToDubins(vector<GraphNode *> const &nodes) {
     vector<Point3f> dubinsPath;
 
     for (int i = 0; i < nodes.size() - 1; i++) {
@@ -267,17 +268,35 @@ class PathFinder {
     return dubinsPath;
   }
 
+  GraphNode *closestNodeToPOI(POI const &poi) {
+    Point point = Point(poi.position.x, poi.position.y);
+    return getClosestNode(point);
+  }
+
   vector<GraphNode *> testClick(int x, int y) {
     cout << x << "  " << y << endl;
-    const Point a(300, 350);
-
+    // const Point a(300, 350);
     GraphNode *start = getClosestNode(Point(x, y));
-    GraphNode *end = getClosestNode(a);
-    vector<GraphNode *> path = getPath(start, end);
 
-    vector<Point3f> dubinsPath = nodesToDubins(path);
+    vector<GraphNode *> nodesPath =
+        getPath(start, closestNodeToPOI(arena.POIs.at(0)));
+    // arena.POIs.size() - 1
+    for (int i = 0; i < arena.POIs.size() - 1; i++) {
+      GraphNode *a = closestNodeToPOI(arena.POIs.at(i));
+      GraphNode *b = closestNodeToPOI(arena.POIs.at(i + 1));
+      cout << "getting path from " << arena.POIs.at(i).c << " to  "
+           << arena.POIs.at(i + 1).c << endl;
+      const auto partialPath = getPath(a, b);
 
-    return path;
+      nodesPath.insert(nodesPath.end(), partialPath.begin(), partialPath.end());
+    }
+
+    // GraphNode *end = getClosestNode(a);
+    // vector<GraphNode *> path = getPath(start, end);
+
+    vector<Point3f> dubinsPath = nodesToDubins(nodesPath);
+
+    return nodesPath;
   }
 
   // thanks to http://paulbourke.net/geometry/circlesphere/
