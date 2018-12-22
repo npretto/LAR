@@ -11,6 +11,11 @@
 using namespace std;
 using namespace cv;
 
+struct POI {
+  Point3f position;
+  char c;
+};
+
 class Arena {
  private:
   DigitOCR ocr;
@@ -34,7 +39,7 @@ class Arena {
 
   std::vector<std::vector<cv::Point>> obstacles;
   std::vector<cv::Point> goal;
-  std::vector<std::tuple<Vec3f, char>> POIs;
+  std::vector<POI> POIs;
 
   float getWidth() { return topView.cols; }
   float getHeight() { return topView.rows; }
@@ -46,6 +51,8 @@ class Arena {
     findGoal(display /*|| true*/);
     findPOIs(display /*|| true */);
   }
+
+  static bool comparePOI(const POI &p1, const POI &p2) { return p1.c < p2.c; }
 
   void findPOIs(bool display = false) {
     cv::Mat green_mask;
@@ -74,9 +81,15 @@ class Arena {
 
       char *digit = ocr.parse(digitArea);
 
-      POIs.push_back(std::make_tuple(c, *digit));
+      POIs.push_back(POI{Point3f(c[0], c[1], c[2]), *digit});
 
       if (STOP_AT_EVERY_OCR) cv::waitKey();
+    }
+
+    sort(POIs.begin(), POIs.end(), Arena::comparePOI);
+
+    for (auto p : POIs) {
+      cout << p.position << " " << p.c << endl;
     }
 
     if (display) {
@@ -264,14 +277,14 @@ class Arena {
   void drawMapOn(cv::Mat &image) {
     // DRAW POIs
     for (size_t i = 0; i < POIs.size(); i++) {
-      Vec3i c = get<0>(POIs[i]);
+      Point3f c = POIs[i].position;
       // cout << c[2] << endl;
       const int margin = 2;  // margin to add to the area
-      circle(image, Point(c[0], c[1]), c[2], Scalar(20, 255, 20), 1, LINE_AA);
-      circle(image, Point(c[0], c[1]), 2, Scalar(0, 255, 0), 3, LINE_AA);
+      circle(image, Point(c.x, c.y), c.z, Scalar(20, 255, 20), 1, LINE_AA);
+      circle(image, Point(c.x, c.y), 2, Scalar(0, 255, 0), 3, LINE_AA);
 
-      char number = get<1>(POIs[i]);
-      putText(image, string(1, number), cvPoint(c[0], c[1]),
+      char number = POIs[i].c;
+      putText(image, string(1, number), cvPoint(c.x, c.y),
               FONT_HERSHEY_COMPLEX_SMALL, 3, cvScalar(255, 255, 255), 4, CV_AA);
     }
 
