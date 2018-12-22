@@ -8,3 +8,7 @@ extern float MAP_WIDTH;
 extern float MAP_HEIGHT;
 
 extern cv::Mat display;
+
+
+float pixelToCm(float pixels);
+float cmToPixels(float cm);

@@ -75,7 +75,7 @@ class PathFinder {
       vector<GraphNode> rowVector;
       for (int col = 0; col < cols; col++) {
         bool ok = true;
-        Point p(col * distance, row * distance);
+        Point p(col * distance + distance / 2, row * distance + distance / 2);
         // force field degli ostacoli
         Point forceSum(0, 0);
         for (CircumscribedObstacle o : obstacles) {
@@ -224,6 +224,9 @@ class PathFinder {
 
   void drawPath(Mat image, vector<GraphNode *> path) {
     for (int i = 0; i < path.size() - 1; i++) {
+      auto a = path[i]->center;
+      auto b = path[i + 1]->center;
+
       line(image, path[i]->center, path[i + 1]->center, Scalar(120, 120, 255),
            3);
     }
@@ -257,6 +260,8 @@ class PathFinder {
                            : Scalar(120, 120, 120);
 
     line(display, a, b, color, 3);
+
+    getDubinPath(Point3f(a.x, a.y, 0), Point3f(b.x, b.y, 0));
 
     return path;
   }
