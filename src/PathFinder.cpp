@@ -138,7 +138,7 @@ class PathFinder {
       obstacles.push_back(poligonToCircle(polygon));
     }
 
-    const float dist = 50;
+    const float dist = NODES_DISTANCE;
     createNodes(dist);
     createEdges(dist * 3.17);
   }
@@ -246,6 +246,27 @@ class PathFinder {
     return closest;
   }
 
+  vector<Point3f> nodesToDubins(vector<GraphNode *> &nodes) {
+    vector<Point3f> dubinsPath;
+
+    for (int i = 0; i < nodes.size() - 1; i++) {
+      auto a = nodes[i]->center;
+      auto b = nodes[i + 1]->center;
+      auto c = i < (nodes.size() - 2) ? nodes[i + 2]->center : Point(0, 0);
+
+      float theta1 = point2angle(b - a);
+      float theta2 = point2angle(c - b);
+      // i < (nodes.size() - 2) ? point2angle(c - b) : point2angle(b - a);
+
+      Point3f p1(a.x, a.y, theta1);
+      Point3f p2(b.x, b.y, theta2);
+
+      for (auto a : getDubinPath(p1, p2)) dubinsPath.push_back(a);
+    }
+
+    return dubinsPath;
+  }
+
   vector<GraphNode *> testClick(int x, int y) {
     cout << x << "  " << y << endl;
     const Point a(300, 350);
@@ -254,14 +275,7 @@ class PathFinder {
     GraphNode *end = getClosestNode(a);
     vector<GraphNode *> path = getPath(start, end);
 
-    const Point b(x, y);
-    const auto color = lineIntersectsWithObstacles(a, b)
-                           ? Scalar(10, 10, 255)
-                           : Scalar(120, 120, 120);
-
-    line(display, a, b, color, 3);
-
-    getDubinPath(Point3f(a.x, a.y, 0), Point3f(b.x, b.y, 0));
+    vector<Point3f> dubinsPath = nodesToDubins(path);
 
     return path;
   }

@@ -16,6 +16,7 @@ const bool calibrate = false;
 bool STOP_AT_EVERY_OCR = false;
 bool DRAW_EDGES = false;
 bool DRAW_VISITED_EDGES = false;
+float NODES_DISTANCE = cmToPixels(10);
 float MAP_HEIGHT = 150;  // 150cm
 float MAP_WIDTH = 100;   // 100cm
 
@@ -38,9 +39,14 @@ static void click(int x, int y) {
 
   arena.drawMapOn(display);
 
-  vector<GraphNode *> p = pf.testClick(x, y);
+  vector<GraphNode *> path = pf.testClick(x, y);
   pf.drawMapOn(display);
-  pf.drawPath(display, p);
+  pf.drawPath(display, path);
+
+  // line(display, path[i]->center, path[i + 1]->center, Scalar(120, 120,
+  // 255),
+  //      3);
+
   cv::imshow("Arena parsed", display);
 
   cout << "." << endl;

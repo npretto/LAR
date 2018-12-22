@@ -41,10 +41,10 @@ int printConfiguration(double q[3], double total, void *user_data) {
 
   path.push_back(Point3f(x, y, theta));
 
-  line(display, a, b, Scalar(120, 255, 120), 1);
-  circle(display, a, 1, Scalar(20, 20, 255), 1, LINE_AA);
+  // line(display, a, b, Scalar(120, 255, 120), 1);
+  // circle(display, a, 1, Scalar(20, 20, 255), 1, LINE_AA);
 
-  printf("%f, %f, %f, %f\n", q[0], q[1], q[2], total);
+  // printf("%f, %f, %f, %f\n", q[0], q[1], q[2], total);
   return 0;
 }
 
@@ -52,10 +52,12 @@ vector<Point3f> getDubinPath(const Point3f &a, const Point3f &b) {
   vector<Point3f> path;
   double q0[] = {a.x, a.y, a.z};
   double q1[] = {b.x, b.y, b.z};
-  double turning_radius = cmToPixels(15);
+  double turning_radius = cmToPixels(5);
   DubinsPath p;
   dubins_shortest_path(&p, q0, q1, turning_radius);
   cout << "PATH ,,,,,,,,,,,,,,,,,,,," << endl;
   dubins_path_sample_many(&p, 10, printConfiguration, &path);
   return path;
 }
+
+float point2angle(Point p) { return atan2(p.y, p.x); }
