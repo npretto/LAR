@@ -103,6 +103,46 @@ class PathFinder {
       // nodesMap.push_back(rowVector);
     }
   }
+  bool pointInsideObstacles(const Point &a) {
+    for (CircumscribedObstacle c : obstacles) {
+      const Point p = c.center;
+
+      if (cv::norm(a - p) < (c.radius)) return true;
+    }
+    return false;
+  }
+  void createSmartNodes() {
+    const float distance = 20;
+
+    for (CircumscribedObstacle o : obstacles) {
+      const int steps = 2 * 3.14 * o.radius / distance;
+      const float step = 2 * 3.14 / steps;
+
+      for (int i = 0; i < steps; i++) {
+        const float angle = step * i;
+        Point2f dir(cos(angle) * (o.radius + safetyDistance),
+                    sin(angle) * (o.radius + safetyDistance));
+        cout << angle << "(" << cos(angle) << ", " << dir.y << ")" << endl;
+
+        GraphNode node{o.center + Point((int)dir.x, (int)dir.y), true};
+        nodes.push_back(node);
+      }
+    }
+
+    // for (int i = 0; i < obstacles.size(); i++) {
+    //   for (int j = i; j < obstacles.size(); j++) {
+    //     CircumscribedObstacle *a = &obstacles[i];
+    //     CircumscribedObstacle *b = &obstacles[j];
+
+    //     Point dist = a->center - b->center;
+
+    //     Point middle = (a->center + b->center) / 2;
+    //     if (!pointInsideObstacles(middle)) {
+    //       nodes.push_back(GraphNode{middle});
+    //     }
+    //   }
+    // }
+  }
 
   void createEdges(float distance) {
     for (int i = 0; i < nodes.size(); i++) {
@@ -130,6 +170,7 @@ class PathFinder {
   // vector<vector<GraphNode>> nodesMap;
   vector<GraphNode> nodes;
   vector<Edge *> edges;
+  vector<Point3f> dubinsPath;
 
   void fromArena(Arena a) {
     arena = a;
@@ -139,8 +180,19 @@ class PathFinder {
     }
 
     const float dist = NODES_DISTANCE;
-    createNodes(dist);
-    createEdges(dist * 3.17);
+    // node for each POI
+    for (auto poi : arena.POIs) {
+      nodes.push_back(GraphNode{Point(poi.position.x, poi.position.y), true});
+    }
+    if (SMART_NODES) {
+      createSmartNodes();
+      createNodes(cmToPixels(21));
+      createEdges(150);
+
+    } else {
+      createNodes(dist);
+      createEdges(dist * 3.17);
+    }
   }
 
   void drawMapOn(const cv::Mat &image) {
@@ -161,10 +213,9 @@ class PathFinder {
 
     // nodes
     for (GraphNode node : nodes) {
-      if (node.ok)
-        circle(image, node.center, 2, Scalar(255, 255, 255), 1, LINE_AA);
-      else
-        circle(image, node.center, 2, Scalar(0, 0, 255), 1, LINE_AA);
+      // if (node.ok)
+      circle(image, node.center, 2, Scalar(255, 255, 255), 1, LINE_AA);
+      // else circle(image, node.center, 2, Scalar(0, 0, 255), 1, LINE_AA);
     }
   }
 
@@ -229,7 +280,17 @@ class PathFinder {
 
       line(image, path[i]->center, path[i + 1]->center,
            Scalar(rand() * 120, rand() * 120, rand() * 255), 3);
+    }
 
+    for (int i = 0; i < dubinsPath.size(); i++) {
+      auto a = dubinsPath[i];
+      Point2f b(a.x + cos(a.z) * 5, a.y + sin(a.z) * 5);
+
+      line(display, Point(a.x, a.y), b, Scalar(120, 255, 120), 1);
+      circle(display, Point(a.x, a.y), 1, Scalar(20, 20, 255), 1, LINE_AA);
+      cv::imshow("Arena parsed", display);
+      cout << "WAIT" << endl;
+      cvWaitKey(30);
     }
   }
 
@@ -294,7 +355,7 @@ class PathFinder {
     // GraphNode *end = getClosestNode(a);
     // vector<GraphNode *> path = getPath(start, end);
 
-    vector<Point3f> dubinsPath = nodesToDubins(nodesPath);
+    dubinsPath = nodesToDubins(nodesPath);
 
     return nodesPath;
   }

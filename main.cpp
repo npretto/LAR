@@ -14,9 +14,11 @@ const String CALIBRATION_PATH = "./data/calibration";
 
 const bool calibrate = false;
 bool STOP_AT_EVERY_OCR = false;
-bool DRAW_EDGES = false;
+bool DRAW_EDGES = true;
 bool DRAW_VISITED_EDGES = false;
-float NODES_DISTANCE = cmToPixels(10);
+bool SMART_NODES = true;
+
+float NODES_DISTANCE = cmToPixels(15);
 float MAP_HEIGHT = 150;  // 150cm
 float MAP_WIDTH = 100;   // 100cm
 
@@ -42,10 +44,6 @@ static void click(int x, int y) {
   vector<GraphNode *> path = pf.testClick(x, y);
   pf.drawMapOn(display);
   pf.drawPath(display, path);
-
-  // line(display, path[i]->center, path[i + 1]->center, Scalar(120, 120,
-  // 255),
-  //      3);
 
   cv::imshow("Arena parsed", display);
 
@@ -77,31 +75,32 @@ int main(int argc, char **argv) {
     auto file = fn.at(i);
     cout << "Undistorting FILE: " << file << endl;
     cv::Mat image = cv::imread(file);
-    camera.undistort(image, image);
+    // camera.undistort(image, image);
     arena.parseImage(image);
 
     cv::imshow("Arena", arena.topView);
 
-    // cv::Mat display = arena.topView;
-    cv::Mat display(arena.topView.rows, arena.topView.cols, CV_8UC3,
-                    Scalar(100, 100, 100));
+    cv::Mat display = arena.topView;
+    // cv::Mat display(arena.topView.rows, arena.topView.cols, CV_8UC3,
+    //                 Scalar(100, 100, 100));
+    cout << "ARENA . DRAW MAP ON " << endl;
     arena.drawMapOn(display);
 
     cv::imshow("Arena parsed", display);
 
-    pf.fromArena(arena);
-    pf.drawMapOn(display);
+    // pf.fromArena(arena);
+    // pf.drawMapOn(display);
 
-    cv::imshow("Arena parsed", display);
+    // cv::imshow("Arena parsed", display);
 
-    setMouseCallback("Arena parsed", onMouse, 0);
+    // setMouseCallback("Arena parsed", onMouse, 0);
 
-    click(100, 600);
+    // click(100, 600);
 
     waitKey(0);
-    for (;;) {
-      waitKey(10);
-    }
+    // for (;;) {
+    //   // waitKey(10);
+    // }
   }
 
   waitKey(0);
