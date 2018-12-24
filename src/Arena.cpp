@@ -97,9 +97,9 @@ class Arena {
 
     sort(POIs.begin(), POIs.end(), Arena::comparePOI);
 
-    for (auto p : POIs) {
-      cout << p.position << " " << p.c << endl;
-    }
+    // for (auto p : POIs) {
+    //   cout << p.position << " " << p.c << endl;
+    // }
 
     if (display) {
       cv::imshow("green_mask_eroded", green_mask);
@@ -168,7 +168,6 @@ class Arena {
     // cv::LINE_AA);
 
     std::vector<cv::Point> approx_curve;
-    cout << "ok8" << endl;
     for (int i = 0; i < contours.size(); ++i) {
       approxPolyDP(contours[i], approx_curve, 5, true);
       approximation = {approx_curve};
@@ -183,19 +182,14 @@ class Arena {
         goal = approx_curve;
       }
     }
-    cout << "ok89" << endl;
 
     std::vector<std::vector<cv::Point>> a = {approx_curve};
-    cout << "ok99" << endl;
 
     // cvWaitKey();
     drawContours(topViewAnnotated, a, -1, cv::Scalar(20, 20, 255), 2,
                  cv::LINE_AA);
-    cout << "ok100" << endl;
 
     if (display) cv::imshow("blue_mask_eroded", blue_mask);
-
-    cout << "ok102" << endl;
   }
 
   void getTopView(cv::Mat input, bool debugView = false) {
@@ -299,24 +293,18 @@ class Arena {
     // detect if the image is "rotated"
     if (cv::norm(arena_approx.at(0) - arena_approx.at(1)) >
         cv::norm(arena_approx.at(1) - arena_approx.at(2))) {
-      cout << "YES" << endl;
+      cout << "IMAGE IS ROTATED " << endl;
       desidered.push_back(desidered.at(0));
       desidered.erase(desidered.begin());
     }
 
-    cout << "ok1" << endl;
-
     vector<Point2f> floats(arena_approx.begin(), arena_approx.end());
-    cout << "ok2 " << floats << endl;
 
     cv::Mat transform = getPerspectiveTransform(floats, desidered);
-    cout << "ok3" << endl;
 
     cv::warpPerspective(input, topView, transform, cv::Size(width, height));
-    cout << "ok4" << endl;
 
     topViewAnnotated = topView.clone();
-    cout << "ok5" << endl;
 
     cv::cvtColor(topView, topView_hsv, cv::COLOR_BGR2HSV);
 

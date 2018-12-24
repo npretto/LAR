@@ -74,7 +74,7 @@ class DigitOCR {
 
     int i = 0;
     const int step = 5;
-    cout << "\n\n\nOCR\n\n\n";
+    // cout << "\n\n\nOCR\n\n\n";
     while (i < 360) {
       cv::Mat rotated = black_mask.clone();
       auto r = cv::getRotationMatrix2D(
@@ -104,7 +104,7 @@ class DigitOCR {
       i += step;
     }
 
-    cout << "TOTAL CONF" << endl;
+    // cout << "TOTAL CONF" << endl;
 
     confidence[' '] = 0;
 
@@ -115,14 +115,13 @@ class DigitOCR {
         max = x.second;
         c = x.first;
       }
-      std::cout << x.first          // string (key)
-                << ':' << x.second  // string's value
-                << std::endl;
+      //   std::cout << x.first
+      //             << ':' << x.second  /
+      //             << std::endl;
     }
 
-    cout << "TROVATO " << c << endl;
+    // cout << "TROVATO " << c << endl;
 
-    cvWaitKey();
     return c;
   }
 
