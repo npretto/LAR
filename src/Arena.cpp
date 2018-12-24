@@ -72,7 +72,7 @@ class Arena {
     if (display) cv::imshow("green_mask", green_mask);
 
     u::erode(green_mask, 5);
-    u::dilate(green_mask, 5);
+    u::dilate(green_mask, 1);
 
     std::vector<Vec3f> circles;
 
@@ -88,9 +88,9 @@ class Arena {
                  (c[2] + margin) * 2, (c[2] + margin) * 2);
       cv::Mat digitArea = topView(r);
 
-      char *digit = ocr.parse(digitArea);
+      char digit = ocr.parse(digitArea);
 
-      POIs.push_back(POI{Point3f(c[0], c[1], c[2]), *digit});
+      POIs.push_back(POI{Point3f(c[0], c[1], c[2]), digit});
 
       if (STOP_AT_EVERY_OCR) cv::waitKey();
     }
