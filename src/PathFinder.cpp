@@ -68,6 +68,16 @@ class PathFinder {
     return CircumscribedObstacle{center, maxRadius, maxRadius + robotRadius};
   }
 
+  // check che sia all'interno dell'arena e che sia fuori dagli ostacoli
+  bool isPointValid(float x, float y, float buffer = 0) {
+    if (!arena.isPointInside(x, y, buffer)) return false;
+
+    for (CircumscribedObstacle o : obstacles) {
+      if (norm(Point(x, y) - o.center) < o.radius) return false;
+    }
+    return true;
+  }
+
   void createNodes(float distance) {
     int cols = arena.getWidth() / distance;
     int rows = arena.getHeight() / distance;
@@ -96,9 +106,11 @@ class PathFinder {
         }
 
         Point position = ok ? p + forceSum : p;
-        GraphNode node{position, ok};
-        // rowVector.push_back(node);
-        if (ok) nodes.push_back(node);
+        if (arena.isPointInside(position.x, position.y, 15)) {
+          GraphNode node{position, ok};
+          // rowVector.push_back(node);
+          if (ok) nodes.push_back(node);
+        }
       }
       // nodesMap.push_back(rowVector);
     }
@@ -123,9 +135,11 @@ class PathFinder {
         Point2f dir(cos(angle) * (o.radius + safetyDistance),
                     sin(angle) * (o.radius + safetyDistance));
         cout << angle << "(" << cos(angle) << ", " << dir.y << ")" << endl;
-
-        GraphNode node{o.center + Point((int)dir.x, (int)dir.y), true};
-        nodes.push_back(node);
+        const Point pos = o.center + Point((int)dir.x, (int)dir.y);
+        if (isPointValid(pos.x, pos.y, 15)) {
+          GraphNode node{pos, true};
+          nodes.push_back(node);
+        }
       }
     }
 

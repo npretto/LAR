@@ -88,19 +88,19 @@ int main(int argc, char **argv) {
 
     cv::imshow("Arena parsed", display);
 
-    // pf.fromArena(arena);
-    // pf.drawMapOn(display);
+    pf.fromArena(arena);
+    pf.drawMapOn(display);
 
-    // cv::imshow("Arena parsed", display);
+    cv::imshow("Arena parsed", display);
 
-    // setMouseCallback("Arena parsed", onMouse, 0);
+    setMouseCallback("Arena parsed", onMouse, 0);
 
-    // click(100, 600);
+    click(100, 600);
 
     waitKey(0);
-    // for (;;) {
-    //   // waitKey(10);
-    // }
+    for (;;) {
+      // waitKey(10);
+    }
   }
 
   waitKey(0);

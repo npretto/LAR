@@ -44,6 +44,14 @@ class Arena {
   float getWidth() { return topView.cols; }
   float getHeight() { return topView.rows; }
 
+  bool isPointInside(float x, float y, float buffer = 0) {
+    if (x < buffer || y < buffer) return false;
+    if (x > (getWidth() - buffer)) return false;
+    if (y > (getHeight() - buffer)) return false;
+
+    return true;
+  }
+
   void parseImage(cv::Mat input, bool display = false) {
     obstacles.clear();
     goal.clear();
