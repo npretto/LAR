@@ -77,7 +77,12 @@ class PathFinder {
     }
     return true;
   }
-
+  bool isPathValid(vector<Point3f> points) {
+    for (const auto &p : points) {
+      if (!isPointValid(p.x, p.y, 0)) return false;
+    }
+    return true;
+  }
   void createNodes(float distance) {
     int cols = arena.getWidth() / distance;
     int rows = arena.getHeight() / distance;
@@ -184,6 +189,7 @@ class PathFinder {
   // vector<vector<GraphNode>> nodesMap;
   vector<GraphNode> nodes;
   vector<Edge *> edges;
+  vector<Point3f> vectors;
   vector<Point3f> dubinsPath;
 
   void fromArena(Arena a) {
@@ -200,8 +206,8 @@ class PathFinder {
     }
     if (SMART_NODES) {
       createSmartNodes();
-      createNodes(cmToPixels(21));
-      createEdges(150);
+      createNodes(cmToPixels(10));
+      createEdges(cmToPixels(20));
 
     } else {
       createNodes(dist);
@@ -235,7 +241,7 @@ class PathFinder {
 
   // based on
   // https://www.redblobgames.com/pathfinding/a-star/implementation.html
-  vector<GraphNode *> getPath(GraphNode *start, GraphNode *goal) {
+  vector<GraphNode *> getAStarPath(GraphNode *start, GraphNode *goal) {
     vector<GraphNode *> path;
 
     std::unordered_map<GraphNode *, GraphNode *> came_from;
@@ -288,20 +294,34 @@ class PathFinder {
   }
 
   void drawPath(Mat image, vector<GraphNode *> path) {
-    for (int i = 0; i < path.size() - 1; i++) {
-      auto a = path[i]->center;
-      auto b = path[i + 1]->center;
+    // for (int i = 0; i < path.size() - 1; i++) {
+    //   auto a = path[i]->center;
+    //   auto b = path[i + 1]->center;
 
-      line(image, path[i]->center, path[i + 1]->center,
-           Scalar(rand() * 120, rand() * 120, rand() * 255), 3);
+    //   line(image, path[i]->center, path[i + 1]->center,
+    //        Scalar(rand() * 120, rand() * 120, rand() * 255), 3);
+    // }
+
+    //  VECTORS
+    for (Point3f vector : vectors) {
+      const Scalar randColor(rand() * 255, rand() * 255, rand() * 255);
+      const auto &a = vector;
+      Point2f b(a.x + cos(a.z) * 80, a.y + sin(a.z) * 80);
+      line(display, Point(a.x, a.y), b, randColor, 3);
+      circle(display, Point(vector.x, vector.y), 4, Scalar(255, 255, 255), 5,
+             LINE_AA);
+      // cv::imshow("Arena parsed", display);
+      // cvWaitKey(300);
     }
 
+    // DUBINS PATH
     for (int i = 0; i < dubinsPath.size(); i++) {
       auto a = dubinsPath[i];
       Point2f b(a.x + cos(a.z) * 5, a.y + sin(a.z) * 5);
 
-      line(display, Point(a.x, a.y), b, Scalar(120, 255, 120), 1);
-      circle(display, Point(a.x, a.y), 1, Scalar(20, 20, 255), 1, LINE_AA);
+      circle(display, Point(a.x, a.y), 1, Scalar(255, 255, 255), 3, LINE_AA);
+      line(display, Point(a.x, a.y), b, Scalar(10, 10, 10), 4);
+
       cv::imshow("Arena parsed", display);
       cout << "WAIT" << endl;
       cvWaitKey(30);
@@ -322,23 +342,40 @@ class PathFinder {
     return closest;
   }
 
-  vector<Point3f> nodesToDubins(vector<GraphNode *> const &nodes) {
+  vector<Point3f> vectorsToDubins(vector<Point3f> const &nodes) {
     vector<Point3f> dubinsPath;
 
-    for (int i = 0; i < nodes.size() - 1; i++) {
-      auto a = nodes[i]->center;
-      auto b = nodes[i + 1]->center;
-      auto c = i < (nodes.size() - 2) ? nodes[i + 2]->center : Point(0, 0);
+    int start = 0;
+    do {
+      int end = start + 1;
+      // vector<Point3f> path = getDubinPath(nodes[start], nodes[end]);
+      // while (!isPathValid(path) && end < nodes.size()) {
+      //   path = getDubinPath(nodes[start], nodes[++end]);
+      // }
 
-      float theta1 = point2angle(b - a);
-      float theta2 = point2angle(c - b);
-      // i < (nodes.size() - 2) ? point2angle(c - b) : point2angle(b - a);
+      // trovo un path valido
+      vector<Point3f> validPath = getDubinPath(nodes[start], nodes[end]);
+      while (!isPathValid(validPath) && end < nodes.size()) {
+        validPath = getDubinPath(nodes[start], nodes[++end]);
+      }
 
-      Point3f p1(a.x, a.y, theta1);
-      Point3f p2(b.x, b.y, theta2);
+      // vado avanti finchè è valido
+      int validEnd = end;
+      vector<Point3f> attemptedPath;
+      bool isValid;
+      do {
+        attemptedPath = getDubinPath(nodes[start], nodes[++end]);
 
-      for (auto a : getDubinPath(p1, p2)) dubinsPath.push_back(a);
-    }
+        isValid = isPathValid(attemptedPath);
+        if (isValid) {
+          validPath = attemptedPath;
+          validEnd = end;
+        }
+      } while (isValid && end < nodes.size() && (end - start) < 3);
+
+      for (auto a : validPath) dubinsPath.push_back(a);
+      start = validEnd;
+    } while (start < nodes.size() - 1);
 
     return dubinsPath;
   }
@@ -348,30 +385,49 @@ class PathFinder {
     return getClosestNode(point);
   }
 
+  vector<Point3f> nodesToVectorPath(vector<GraphNode *> nodes) {
+    vector<Point3f> vectors;
+
+    float theta;
+
+    for (int i = 0; i < nodes.size() - 1; i++) {
+      auto &a = nodes[i]->center;
+      auto &b = nodes[i + 1]->center;
+
+      theta = point2angle(b - a);
+
+      Point3f p(a.x, a.y, theta);
+      vectors.push_back(p);
+    }
+    const auto &last = vectors[vectors.size() - 1];
+    vectors.push_back(Point3f(last.x, last.y, theta));
+    return vectors;
+  }
+
   vector<GraphNode *> testClick(int x, int y) {
     cout << x << "  " << y << endl;
     // const Point a(300, 350);
     GraphNode *start = getClosestNode(Point(x, y));
 
-    vector<GraphNode *> nodesPath =
-        getPath(start, closestNodeToPOI(arena.POIs.at(0)));
-    // arena.POIs.size() - 1
+    vector<GraphNode *> totalNodesPath =
+        getAStarPath(start, closestNodeToPOI(arena.POIs.at(0)));
     for (int i = 0; i < arena.POIs.size() - 1; i++) {
       GraphNode *a = closestNodeToPOI(arena.POIs.at(i));
       GraphNode *b = closestNodeToPOI(arena.POIs.at(i + 1));
       cout << "getting path from " << arena.POIs.at(i).c << " to  "
            << arena.POIs.at(i + 1).c << endl;
-      const auto partialPath = getPath(a, b);
+      const auto partialPath = getAStarPath(a, b);
 
-      nodesPath.insert(nodesPath.end(), partialPath.begin(), partialPath.end());
+      totalNodesPath.insert(totalNodesPath.end(), partialPath.begin(),
+                            partialPath.end());
     }
 
-    // GraphNode *end = getClosestNode(a);
-    // vector<GraphNode *> path = getPath(start, end);
+    //"vectors" = points with directions
+    vectors = nodesToVectorPath(totalNodesPath);
 
-    dubinsPath = nodesToDubins(nodesPath);
+    dubinsPath = vectorsToDubins(vectors);
 
-    return nodesPath;
+    return totalNodesPath;
   }
 
   // thanks to http://paulbourke.net/geometry/circlesphere/

@@ -21,6 +21,7 @@ bool SMART_NODES = true;
 float NODES_DISTANCE = cmToPixels(15);
 float MAP_HEIGHT = 150;  // 150cm
 float MAP_WIDTH = 100;   // 100cm
+float TURNING_RADIUS = cmToPixels(15);
 
 float pixelToCm(float pixels) { return pixels / Arena::width * MAP_WIDTH; }
 float cmToPixels(float cm) { return cm / MAP_WIDTH * Arena::width; }
@@ -49,7 +50,9 @@ static void click(int x, int y) {
 
   cout << "." << endl;
 }
-static void onMouse(int event, int x, int y, int, void *) { click(x, y); }
+static void onMouse(int event, int x, int y, int, void *) {
+  // click(x, y);
+}
 
 int main(int argc, char **argv) {
   if (calibrate) {
@@ -95,12 +98,13 @@ int main(int argc, char **argv) {
 
     setMouseCallback("Arena parsed", onMouse, 0);
 
-    click(100, 600);
+    click(30, 30);
 
+    cout << "SHOULD PRESS FOR NEXT MAP?" << endl;
     waitKey(0);
-    for (;;) {
-      // waitKey(10);
-    }
+    // for (;;) {
+    //   // waitKey(10);
+    // }
   }
 
   waitKey(0);

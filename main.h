@@ -6,6 +6,8 @@ extern bool SMART_NODES;
 extern float NODES_DISTANCE;
 extern float safetyDistance;
 extern float robotRadius;
+extern float TURNING_RADIUS;
+
 extern float MAP_WIDTH;
 extern float MAP_HEIGHT;
 
