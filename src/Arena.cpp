@@ -87,6 +87,7 @@ class Arena {
     cv::HoughCircles(green_mask, circles, HOUGH_GRADIENT, 1, 30, 100, 10, 30,
                      60);
 
+    ocr.init();
     for (size_t i = 0; i < circles.size(); i++) {
       Vec3i c = circles[i];
 

@@ -206,12 +206,12 @@ class PathFinder {
     }
     if (SMART_NODES) {
       createSmartNodes();
-      createNodes(cmToPixels(10));
-      createEdges(cmToPixels(20));
+      createNodes(dist);
+      createEdges(dist * 1.5);
 
     } else {
       createNodes(dist);
-      createEdges(dist * 3.17);
+      createEdges(dist * 1.5);
     }
   }
 
@@ -371,7 +371,7 @@ class PathFinder {
           validPath = attemptedPath;
           validEnd = end;
         }
-      } while (isValid && end < nodes.size() && (end - start) < 3);
+      } while (isValid && end < nodes.size() && (end - start) < 2);
 
       for (auto a : validPath) dubinsPath.push_back(a);
       start = validEnd;
@@ -401,6 +401,7 @@ class PathFinder {
     }
     const auto &last = vectors[vectors.size() - 1];
     vectors.push_back(Point3f(last.x, last.y, theta));
+
     return vectors;
   }
 

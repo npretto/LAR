@@ -49,7 +49,9 @@ class DigitOCR {
   }
 
  public:
-  DigitOCR() {
+  DigitOCR() {}
+
+  void init() {
     ocr = new tesseract::TessBaseAPI();  // Create Tesseract object
     ocr->Init(NULL, "eng");  // Initialize tesseract to use English (eng)
     ocr->SetPageSegMode(
@@ -59,6 +61,7 @@ class DigitOCR {
     ocr->SetVariable("tessedit_char_whitelist",
                      "012345689");  // Only digits are valid output
   }
+
   char parse(cv::Mat image) {
     cv::Mat black_mask;
     toBlackMask(image, black_mask);

@@ -16,9 +16,9 @@ const bool calibrate = false;
 bool STOP_AT_EVERY_OCR = false;
 bool DRAW_EDGES = true;
 bool DRAW_VISITED_EDGES = false;
-bool SMART_NODES = true;
 
-float NODES_DISTANCE = cmToPixels(15);
+bool SMART_NODES = false;
+float NODES_DISTANCE = cmToPixels(10);
 float MAP_HEIGHT = 150;  // 150cm
 float MAP_WIDTH = 100;   // 100cm
 float TURNING_RADIUS = cmToPixels(15);
@@ -27,7 +27,7 @@ float pixelToCm(float pixels) { return pixels / Arena::width * MAP_WIDTH; }
 float cmToPixels(float cm) { return cm / MAP_WIDTH * Arena::width; }
 
 float safetyDistance = 5;
-float robotRadius = 20;
+float robotRadius = 30;
 
 CalibratedCamera camera;
 Arena arena;
@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
     cv::Mat image = cv::imread(file);
     // camera.undistort(image, image);
     arena.parseImage(image);
-
+    cout << "ARENA PARSED without crashing" << endl;
     cv::imshow("Arena", arena.topView);
 
     cv::Mat display = arena.topView;
@@ -90,6 +90,8 @@ int main(int argc, char **argv) {
     arena.drawMapOn(display);
 
     cv::imshow("Arena parsed", display);
+
+    cvWaitKey();
 
     pf.fromArena(arena);
     pf.drawMapOn(display);
