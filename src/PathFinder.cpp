@@ -294,15 +294,8 @@ class PathFinder {
   }
 
   void drawPath(Mat image, vector<GraphNode *> path) {
-    // for (int i = 0; i < path.size() - 1; i++) {
-    //   auto a = path[i]->center;
-    //   auto b = path[i + 1]->center;
-
-    //   line(image, path[i]->center, path[i + 1]->center,
-    //        Scalar(rand() * 120, rand() * 120, rand() * 255), 3);
-    // }
-
     //  VECTORS
+    int i = 0;
     for (Point3f vector : vectors) {
       const Scalar randColor(rand() * 255, rand() * 255, rand() * 255);
       const auto &a = vector;
@@ -310,6 +303,9 @@ class PathFinder {
       line(display, Point(a.x, a.y), b, randColor, 3);
       circle(display, Point(vector.x, vector.y), 4, Scalar(255, 255, 255), 5,
              LINE_AA);
+
+      putText(display, to_string(i++), Point(vector.x, vector.y),
+              FONT_HERSHEY_COMPLEX_SMALL, 1, cvScalar(0, 0, 0), 4, CV_AA);
       // cv::imshow("Arena parsed", display);
       // cvWaitKey(300);
     }
@@ -324,7 +320,7 @@ class PathFinder {
 
       cv::imshow("Arena parsed", display);
       cout << "WAIT" << endl;
-      cvWaitKey(30);
+      cvWaitKey(5);
     }
   }
 
@@ -355,14 +351,16 @@ class PathFinder {
 
       // trovo un path valido
       vector<Point3f> validPath = getDubinPath(nodes[start], nodes[end]);
-      while (!isPathValid(validPath) && end < nodes.size()) {
-        validPath = getDubinPath(nodes[start], nodes[++end]);
-      }
+      bool isValid;
+      // do {
+      //   validPath = getDubinPath(nodes[start], nodes[end]);
+      //   isValid = isPathValid(validPath);
+      //   if (!isValid) end++;
+      // } while (!isValid && end < nodes.size());
 
       // vado avanti finchè è valido
       int validEnd = end;
       vector<Point3f> attemptedPath;
-      bool isValid;
       do {
         attemptedPath = getDubinPath(nodes[start], nodes[++end]);
 
@@ -371,7 +369,7 @@ class PathFinder {
           validPath = attemptedPath;
           validEnd = end;
         }
-      } while (isValid && end < nodes.size() && (end - start) < 2);
+      } while (isValid && end < nodes.size() && (end - start) < 3);
 
       for (auto a : validPath) dubinsPath.push_back(a);
       start = validEnd;
@@ -422,11 +420,16 @@ class PathFinder {
       totalNodesPath.insert(totalNodesPath.end(), partialPath.begin(),
                             partialPath.end());
     }
-
+    cout << "PATHs DONE" << endl;
     //"vectors" = points with directions
+
+    cout << "generating vectors from nodes" << endl;
     vectors = nodesToVectorPath(totalNodesPath);
 
+    cout << "generating dubins" << endl;
     dubinsPath = vectorsToDubins(vectors);
+
+    cout << "done with dubins" << endl;
 
     return totalNodesPath;
   }

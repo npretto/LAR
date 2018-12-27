@@ -11,40 +11,39 @@
 #include "./src/PathFinder.cpp"
 
 const String CALIBRATION_PATH = "./data/calibration";
-
 const bool calibrate = false;
 bool STOP_AT_EVERY_OCR = false;
 bool DRAW_EDGES = true;
-bool DRAW_VISITED_EDGES = false;
+bool DRAW_VISITED_EDGES = true;
 
 bool SMART_NODES = false;
 float NODES_DISTANCE = cmToPixels(10);
 float MAP_HEIGHT = 150;  // 150cm
 float MAP_WIDTH = 100;   // 100cm
-float TURNING_RADIUS = cmToPixels(15);
+float TURNING_RADIUS = cmToPixels(10);
 
 float pixelToCm(float pixels) { return pixels / Arena::width * MAP_WIDTH; }
 float cmToPixels(float cm) { return cm / MAP_WIDTH * Arena::width; }
 
-float safetyDistance = 5;
+float safetyDistance = cmToPixels(3);
 float robotRadius = 30;
 
 CalibratedCamera camera;
-Arena arena;
-PathFinder pf;
+Arena *arena;
+PathFinder *pf;
 
 cv::Mat display;
 
 static void click(int x, int y) {
-  cv::Mat display2(arena.topView.rows, arena.topView.cols, CV_8UC3,
+  cv::Mat display2(arena->topView.rows, arena->topView.cols, CV_8UC3,
                    Scalar(100, 100, 100));
   display = display2;
 
-  arena.drawMapOn(display);
+  arena->drawMapOn(display);
 
-  vector<GraphNode *> path = pf.testClick(x, y);
-  pf.drawMapOn(display);
-  pf.drawPath(display, path);
+  vector<GraphNode *> path = pf->testClick(x, y);
+  pf->drawMapOn(display);
+  pf->drawPath(display, path);
 
   cv::imshow("Arena parsed", display);
 
@@ -75,31 +74,37 @@ int main(int argc, char **argv) {
   cout << "folder letta" << endl;
 
   for (int i = 0; i < fn.size(); i++) {
+    cout << "inizio ciclo" << endl;
+    arena = new Arena();
+    pf = new PathFinder();
+    cout << "creati nuovi oggetti" << endl;
+
     auto file = fn.at(i);
     cout << "Undistorting FILE: " << file << endl;
     cv::Mat image = cv::imread(file);
     // camera.undistort(image, image);
-    arena.parseImage(image);
+    arena->parseImage(image);
     cout << "ARENA PARSED without crashing" << endl;
-    cv::imshow("Arena", arena.topView);
+    cv::imshow("Arena", arena->topView);
 
-    cv::Mat display = arena.topView;
+    cv::Mat display = arena->topView;
     // cv::Mat display(arena.topView.rows, arena.topView.cols, CV_8UC3,
     //                 Scalar(100, 100, 100));
     cout << "ARENA . DRAW MAP ON " << endl;
-    arena.drawMapOn(display);
+    arena->drawMapOn(display);
 
     cv::imshow("Arena parsed", display);
 
-    cvWaitKey();
+    // cvWaitKey();
 
-    pf.fromArena(arena);
-    pf.drawMapOn(display);
+    pf->fromArena(*arena);
+    pf->drawMapOn(display);
 
-    cv::imshow("Arena parsed", display);
+    // cv::imshow("Arena parsed", display);
 
-    setMouseCallback("Arena parsed", onMouse, 0);
-
+    // setMouseCallback("Arena parsed", onMouse, 0);
+    cout << "CLICK" << endl;
+    // cvWaitKey();
     click(30, 30);
 
     cout << "SHOULD PRESS FOR NEXT MAP?" << endl;
@@ -107,6 +112,12 @@ int main(int argc, char **argv) {
     // for (;;) {
     //   // waitKey(10);
     // }
+
+    // delete arena;
+    // cout << "DELETE FATTO per arena" << endl;
+    // cout << pf << endl;
+    // delete pf;
+    // cout << "DELETE FATTO per pf" << endl;
   }
 
   waitKey(0);
