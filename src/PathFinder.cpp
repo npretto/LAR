@@ -189,7 +189,7 @@ class PathFinder {
   // vector<vector<GraphNode>> nodesMap;
   vector<GraphNode> nodes;
   vector<Edge *> edges;
-  vector<Point3f> vectors;
+  vector<vector<Point3f>> vectors;
   vector<Point3f> dubinsPath;
 
   void fromArena(Arena a) {
@@ -283,31 +283,40 @@ class PathFinder {
       }
     }
     GraphNode *n = goal;
-    path.push_back(goal);
+    // path.push_back(goal);
+
     while (n != start) {
       GraphNode *prev = came_from[n];
       path.push_back(prev);
       n = prev;
     }
+
     reverse(begin(path), end(path));
+
+    path.push_back(goal);
+    GraphNode fakenews = GraphNode{Point(300, 300), true};
+    // path.push_back(&fakenews);
+
     return path;
   }
 
-  void drawPath(Mat image, vector<GraphNode *> path) {
+  void drawPath(Mat image) {
     //  VECTORS
     int i = 0;
-    for (Point3f vector : vectors) {
-      const Scalar randColor(rand() * 255, rand() * 255, rand() * 255);
-      const auto &a = vector;
-      Point2f b(a.x + cos(a.z) * 80, a.y + sin(a.z) * 80);
-      line(display, Point(a.x, a.y), b, randColor, 3);
-      circle(display, Point(vector.x, vector.y), 4, Scalar(255, 255, 255), 5,
-             LINE_AA);
+    for (auto vv : vectors) {
+      for (Point3f vector : vv) {
+        const Scalar randColor(rand() * 255, rand() * 255, rand() * 255);
+        const auto &a = vector;
+        Point2f b(a.x + cos(a.z) * 80, a.y + sin(a.z) * 80);
+        line(display, Point(a.x, a.y), b, randColor, 3);
+        circle(display, Point(vector.x, vector.y), 4, Scalar(255, 255, 255), 5,
+               LINE_AA);
 
-      putText(display, to_string(i++), Point(vector.x, vector.y),
-              FONT_HERSHEY_COMPLEX_SMALL, 1, cvScalar(0, 0, 0), 4, CV_AA);
-      // cv::imshow("Arena parsed", display);
-      // cvWaitKey(300);
+        putText(display, to_string(i++), Point(vector.x, vector.y),
+                FONT_HERSHEY_COMPLEX_SMALL, 1, cvScalar(0, 0, 0), 2, CV_AA);
+        cv::imshow("Arena parsed", display);
+        // cvWaitKey();
+      }
     }
 
     // DUBINS PATH
@@ -319,8 +328,8 @@ class PathFinder {
       line(display, Point(a.x, a.y), b, Scalar(10, 10, 10), 4);
 
       cv::imshow("Arena parsed", display);
-      cout << "WAIT" << endl;
-      cvWaitKey(5);
+      // cout << "WAIT" << endl;
+      cvWaitKey(15);
     }
   }
 
@@ -342,37 +351,41 @@ class PathFinder {
     vector<Point3f> dubinsPath;
 
     int start = 0;
+
     do {
       int end = start + 1;
-      // vector<Point3f> path = getDubinPath(nodes[start], nodes[end]);
-      // while (!isPathValid(path) && end < nodes.size()) {
-      //   path = getDubinPath(nodes[start], nodes[++end]);
-      // }
 
       // trovo un path valido
       vector<Point3f> validPath = getDubinPath(nodes[start], nodes[end]);
       bool isValid;
-      // do {
-      //   validPath = getDubinPath(nodes[start], nodes[end]);
-      //   isValid = isPathValid(validPath);
-      //   if (!isValid) end++;
-      // } while (!isValid && end < nodes.size());
+      do {
+        validPath = getDubinPath(nodes[start], nodes[end]);
+        isValid = isPathValid(validPath);
+        if (!isValid) end++;
 
-      // vado avanti finchè è valido
+        // cout << "end: " << end << "valid?" << isValid << endl;
+      } while (!isValid && end < nodes.size());
+
       int validEnd = end;
+      // vado avanti finchè è valido
       vector<Point3f> attemptedPath;
       do {
-        attemptedPath = getDubinPath(nodes[start], nodes[++end]);
+        attemptedPath = getDubinPath(nodes[start], nodes[end]);
 
         isValid = isPathValid(attemptedPath);
         if (isValid) {
           validPath = attemptedPath;
           validEnd = end;
+          end++;
         }
-      } while (isValid && end < nodes.size() && (end - start) < 3);
+      } while (isValid && end < nodes.size() && (end - start) < 4);
+
+      cout << "from : " << start << "   to:  " << validEnd << endl;
 
       for (auto a : validPath) dubinsPath.push_back(a);
+
       start = validEnd;
+
     } while (start < nodes.size() - 1);
 
     return dubinsPath;
@@ -385,6 +398,7 @@ class PathFinder {
 
   vector<Point3f> nodesToVectorPath(vector<GraphNode *> nodes) {
     vector<Point3f> vectors;
+    cout << ">>>: nodes " << nodes.size() << endl;
 
     float theta;
 
@@ -397,19 +411,35 @@ class PathFinder {
       Point3f p(a.x, a.y, theta);
       vectors.push_back(p);
     }
-    const auto &last = vectors[vectors.size() - 1];
+    const auto &last = nodes[nodes.size() - 1]->center;
     vectors.push_back(Point3f(last.x, last.y, theta));
+
+    cout << ">>>: vectors " << vectors.size() << endl;
 
     return vectors;
   }
 
-  vector<GraphNode *> testClick(int x, int y) {
+  void testClick(int x, int y) {
     cout << x << "  " << y << endl;
     // const Point a(300, 350);
     GraphNode *start = getClosestNode(Point(x, y));
 
-    vector<GraphNode *> totalNodesPath =
+    // vector<GraphNode *> totalNodesPath =
+    const auto startToFirstPOI =
         getAStarPath(start, closestNodeToPOI(arena.POIs.at(0)));
+
+    // for (int i = 0; i < startToFirstPOI.size() - 1; i++) {
+    //   auto a = startToFirstPOI.at(i)->center;
+    //   auto b = startToFirstPOI.at(i + 1)->center;
+
+    //   line(display, a, b, Scalar(255, 255, 255), 3);
+
+    //   cv::imshow("Arena parsed", display);
+    //   cvWaitKey();
+    // }
+
+    vector<vector<GraphNode *>> segments;
+    segments.push_back(startToFirstPOI);
     for (int i = 0; i < arena.POIs.size() - 1; i++) {
       GraphNode *a = closestNodeToPOI(arena.POIs.at(i));
       GraphNode *b = closestNodeToPOI(arena.POIs.at(i + 1));
@@ -417,21 +447,30 @@ class PathFinder {
            << arena.POIs.at(i + 1).c << endl;
       const auto partialPath = getAStarPath(a, b);
 
-      totalNodesPath.insert(totalNodesPath.end(), partialPath.begin(),
-                            partialPath.end());
+      segments.push_back(partialPath);
+      // totalNodesPath.insert(totalNodesPath.end(), partialPath.begin(),
+      //                       partialPath.end());
     }
     cout << "PATHs DONE" << endl;
     //"vectors" = points with directions
 
     cout << "generating vectors from nodes" << endl;
-    vectors = nodesToVectorPath(totalNodesPath);
+
+    for (auto segment : segments) {
+      vectors.push_back(nodesToVectorPath(segment));
+    }
+    // vectors = nodesToVectorPath(totalNodesPath);
 
     cout << "generating dubins" << endl;
-    dubinsPath = vectorsToDubins(vectors);
+    for (auto v : vectors) {
+      cout << "----------------------------------" << endl;
+
+      auto partialDubins = vectorsToDubins(v);
+      dubinsPath.insert(dubinsPath.end(), partialDubins.begin(),
+                        partialDubins.end());
+    }
 
     cout << "done with dubins" << endl;
-
-    return totalNodesPath;
   }
 
   // thanks to http://paulbourke.net/geometry/circlesphere/

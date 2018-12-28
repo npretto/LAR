@@ -17,10 +17,10 @@ bool DRAW_EDGES = true;
 bool DRAW_VISITED_EDGES = true;
 
 bool SMART_NODES = false;
-float NODES_DISTANCE = cmToPixels(10);
+float NODES_DISTANCE = cmToPixels(15);
 float MAP_HEIGHT = 150;  // 150cm
 float MAP_WIDTH = 100;   // 100cm
-float TURNING_RADIUS = cmToPixels(10);
+float TURNING_RADIUS = cmToPixels(15);
 
 float pixelToCm(float pixels) { return pixels / Arena::width * MAP_WIDTH; }
 float cmToPixels(float cm) { return cm / MAP_WIDTH * Arena::width; }
@@ -41,9 +41,10 @@ static void click(int x, int y) {
 
   arena->drawMapOn(display);
 
-  vector<GraphNode *> path = pf->testClick(x, y);
+  // vector<GraphNode *> path =
+  pf->testClick(x, y);
   pf->drawMapOn(display);
-  pf->drawPath(display, path);
+  pf->drawPath(display);
 
   cv::imshow("Arena parsed", display);
 
@@ -108,7 +109,7 @@ int main(int argc, char **argv) {
     click(30, 30);
 
     cout << "SHOULD PRESS FOR NEXT MAP?" << endl;
-    waitKey(0);
+    waitKey();
     // for (;;) {
     //   // waitKey(10);
     // }
