@@ -17,7 +17,7 @@ bool DRAW_EDGES = true;
 bool DRAW_VISITED_EDGES = true;
 
 bool SMART_NODES = false;
-float NODES_DISTANCE = cmToPixels(15);
+float NODES_DISTANCE = cmToPixels(9);
 float MAP_HEIGHT = 150;  // 150cm
 float MAP_WIDTH = 100;   // 100cm
 float TURNING_RADIUS = cmToPixels(15);
