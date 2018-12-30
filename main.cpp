@@ -106,7 +106,7 @@ int main(int argc, char **argv) {
     // setMouseCallback("Arena parsed", onMouse, 0);
     cout << "CLICK" << endl;
     // cvWaitKey();
-    click(30, 30);
+    click(60, 60);
 
     cout << "SHOULD PRESS FOR NEXT MAP?" << endl;
     waitKey();

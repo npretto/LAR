@@ -77,12 +77,43 @@ class PathFinder {
     }
     return true;
   }
-  bool isPathValid(vector<Point3f> points) {
+  bool pathDoesNotCollide(vector<Point3f> points) {
+    vector<bool> poisVisited;
+
     for (const auto &p : points) {
-      if (!isPointValid(p.x, p.y, 0)) return false;
+      if (!isPointValid(p.x, p.y, robotRadius)) return false;
     }
+
     return true;
   }
+
+  bool pathVisitsAllPOIs(vector<Point3f> points) {
+    vector<bool> poisVisited;
+    for (auto POI : arena.POIs) {
+      poisVisited.push_back(false);
+    }
+    for (const auto &p : points) {
+      for (int i = 0; i < arena.POIs.size(); i++) {
+        const float dist = norm(arena.POIs.at(i).position - p);
+        printf("dist : %f \n", dist);
+        if (dist < 50) {
+          poisVisited.at(i) = true;
+        }
+      }
+    }
+
+    cout << "VISITED: ";
+    for (auto i = poisVisited.begin(); i != poisVisited.end(); ++i)
+      std::cout << (*i ? 1 : 0) << ' ';
+    cout << endl;
+
+    for (bool visited : poisVisited) {
+      if (!visited) return false;
+    }
+
+    return true;
+  }
+
   void createNodes(float distance) {
     int cols = arena.getWidth() / distance;
     int rows = arena.getHeight() / distance;
@@ -329,7 +360,7 @@ class PathFinder {
 
       cv::imshow("Arena parsed", display);
       // cout << "WAIT" << endl;
-      cvWaitKey(15);
+      // cvWaitKey(15);
     }
   }
 
@@ -367,7 +398,7 @@ class PathFinder {
         //   bool isValid;
         //   do {
         //     validPath = getDubinPath(nodes[start], nodes[end]);
-        //     isValid = isPathValid(validPath);
+        //     isValid = pathDoesNotCollide(validPath);
         //     if (!isValid) end++;
 
         //     // cout << "end: " << end << "valid?" << isValid << endl;
@@ -379,7 +410,7 @@ class PathFinder {
         //   do {
         //     attemptedPath = getDubinPath(nodes[start], nodes[end]);
 
-        //     isValid = isPathValid(attemptedPath);
+        //     isValid = pathDoesNotCollide(attemptedPath);
         //     if (isValid) {
         //       validPath = attemptedPath;
         //       validEnd = end;
@@ -405,6 +436,8 @@ class PathFinder {
     // int end = start + 1;
     int end = start + 2 + rand() % (vectors.size() - start - 2);
 
+    // end = start + 2;
+
     // int tries = 0;
 
     // trovo un path valido
@@ -415,21 +448,21 @@ class PathFinder {
     /**
       // if (start > 0 && end < vectors.size() - 1) {
       //   attempt = getDubinPath(vectors[start - 1], vectors[end + 1]);
-      //   if (isPathValid(attempt)) {
+      //   if (pathDoesNotCollide(attempt)) {
       //     start--;
       //     end++;
       //   }
       // } else {
       //   if (start > 0) {
       //     attempt = getDubinPath(vectors[start - 1], vectors[end]);
-      //     if (isPathValid(attempt)) {
+      //     if (pathDoesNotCollide(attempt)) {
       //       start--;
       //     }
       //   }
 
       //   if (end < vectors.size() - 1) {
       //     attempt = getDubinPath(vectors[start], vectors[end + 1]);
-      //     if (isPathValid(attempt)) {
+      //     if (pathDoesNotCollide(attempt)) {
       //       end++;
       //     }
       //   }
@@ -440,14 +473,17 @@ class PathFinder {
 
     attempt = getDubinPath(vectors[start], vectors[end]);
 
-    isValid = isPathValid(attempt);
+    isValid = pathDoesNotCollide(attempt);
 
     printf("attempting from %i to %i , valid? %i \n", start, end,
            isValid ? 1 : 0);
+
     // } while (!isValid && (end < nodes.size() || start > 0) && tries < 2);
 
     // cout << "from : " << start << "   to:  " << validEnd << endl;
     if (isValid) {
+      auto copy = vectors;
+
       cout << "path is valid, trying to erase, " << start << " -> " << end
            << endl;
 
@@ -458,6 +494,13 @@ class PathFinder {
       vectors.erase(vectors.begin() + a, vectors.begin() + b);
 
       cout << "erased, now vectors.size() :" << vectors.size() << endl;
+
+      if (!pathVisitsAllPOIs(vectors)) {
+        cout << "NOT VISITING EVRYTHING" << endl;
+        vectors = copy;
+      } else {
+        cout << "YES  ------ VISITING EVRYTHING" << endl;
+      }
     }
 
     return vectors;
@@ -534,36 +577,78 @@ class PathFinder {
     // vectors = nodesToVectorPath(totalNodesPath);
 
     cout << "generating dubins" << endl;
-    for (auto v : vectors) {
-      cout << "----------------------------------" << endl;
+    vector<Point3f> vectorFlattened;
 
-      vector<Point3f> partialDubins = vectorsToDubins(v);
-
-      while (!isPathValid(partialDubins)) {
-        cout << "simplify" << endl;
-        v = simplify(v);
-
-        display = Scalar(15, 15, 15);
-        arena.drawMapOn(display);
-        drawMapOn(display);
-        for (auto vector : v) {
-          const Scalar randColor(rand() * 255, rand() * 255, rand() * 255);
-          const auto &a = vector;
-          Point2f b(a.x + cos(a.z) * 80, a.y + sin(a.z) * 80);
-          line(display, Point(a.x, a.y), b, randColor, 3);
-          circle(display, Point(vector.x, vector.y), 4, Scalar(255, 255, 255),
-                 5, LINE_AA);
-        }
-
-        cv::imshow("Arena parsed", display);
-        waitKey();
-
-        partialDubins = vectorsToDubins(v);
-      }
-
-      dubinsPath.insert(dubinsPath.end(), partialDubins.begin(),
-                        partialDubins.end());
+    for (auto s : vectors) {
+      vectorFlattened.insert(vectorFlattened.end(), s.begin(), s.end());
     }
+
+    dubinsPath = vectorsToDubins(vectorFlattened);
+
+    cv::imshow("Arena parsed", display);
+    waitKey(1);
+
+    while (!pathDoesNotCollide(dubinsPath)) {
+      cout << "simplify" << endl;
+      vectorFlattened = simplify(vectorFlattened);
+
+      // display = Scalar(15, 15, 15);
+      // arena.drawMapOn(display);
+      // drawMapOn(display);
+      // drawPath(display);
+      for (auto vector : vectorFlattened) {
+        const Scalar randColor(rand() * 255, rand() * 255, rand() * 255);
+        const auto &a = vector;
+        Point2f b(a.x + cos(a.z) * 80, a.y + sin(a.z) * 80);
+        line(display, Point(a.x, a.y), b, randColor, 3);
+        circle(display, Point(vector.x, vector.y), 4, Scalar(255, 255, 255), 5,
+               LINE_AA);
+      }
+      // waitKey();
+      // cv::imshow("Arena parsed", display);
+      // waitKey(1);
+
+      dubinsPath = vectorsToDubins(vectorFlattened);
+    }
+
+    display = Scalar(15, 15, 15);
+    arena.drawMapOn(display);
+    // drawMapOn(display);
+    drawPath(display);
+
+    // dubinsPath = partialDubins;
+
+    // for (auto v : vectors) {
+    //   cout << "----------------------------------" << endl;
+
+    //   vector<Point3f> partialDubins = vectorsToDubins(v);
+
+    //   while (!pathDoesNotCollide(partialDubins)) {
+    //     cout << "simplify" << endl;
+    //     v = simplify(v);
+
+    //     display = Scalar(15, 15, 15);
+    //     arena.drawMapOn(display);
+    //     drawMapOn(display);
+    //     for (auto vector : v) {
+    //       const Scalar randColor(rand() * 255, rand() * 255, rand() * 255);
+    //       const auto &a = vector;
+    //       Point2f b(a.x + cos(a.z) * 80, a.y + sin(a.z) * 80);
+    //       line(display, Point(a.x, a.y), b, randColor, 3);
+    //       circle(display, Point(vector.x, vector.y), 4, Scalar(255, 255,
+    //       255),
+    //              5, LINE_AA);
+    //     }
+
+    //     cv::imshow("Arena parsed", display);
+    //     waitKey();
+
+    //     partialDubins = vectorsToDubins(v);
+    //   }
+
+    //   dubinsPath.insert(dubinsPath.end(), partialDubins.begin(),
+    //                     partialDubins.end());
+    // }
 
     cout << "done with dubins" << endl;
   }
