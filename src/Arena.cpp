@@ -60,13 +60,13 @@ class Arena {
     getTopView(input, false);
 
     cout << "find obstacles" << endl;
-    findObstacles(false);
+    findObstacles(true);
 
     cout << "findGoal" << endl;
     findGoal(false);
 
     cout << "findPOIs" << endl;
-    findPOIs(true);
+    findPOIs(false);
   }
 
   static bool comparePOI(const POI &p1, const POI &p2) { return p1.c < p2.c; }
@@ -133,9 +133,9 @@ class Arena {
     red_mask = red_mask | red_mask2;
 
     if (display) cv::imshow("red_mask", red_mask);
-    u::erode(red_mask, 1);
-    u::dilateErode(red_mask);
-    u::erode(red_mask, 1);
+    u::erode(red_mask, 2);
+    // u::dilateErode(red_mask);
+    // u::erode(red_mask, 2);
 
     // u::dilateErode(red_mask);
 
