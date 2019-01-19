@@ -1,0 +1,11 @@
+
+
+se non trova ilpath valido ritorna null o quaclosa di simile
+e riprova diminuiendo gli "skip" massimi finchè non ne trova uno giusto
+
+OPPURE
+
+fai la funzione simplify, e continua a semplificare finchè il path cambia (controlla la size di oldPath e simplified e se sono uguali smetti)
+
+[ ] fai le combinazioni dei path
+[ ] prova a ottimizzare findPOIs facendogli fare meno iterazioni

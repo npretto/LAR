@@ -7,7 +7,7 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/opencv.hpp>
 #include <string>
-#include "../main.h"
+#include "./main.h"
 #include "./utils.cpp"
 
 class DigitOCR {
