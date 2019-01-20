@@ -30,14 +30,13 @@ int main(int argc, char* argv[]) {
     if (!rp.preprocessMap(img)) {
       std::cerr << "(Critical) Failed to preprocess map" << std::endl;
     }
-
+    Path path;
+    if (!rp.planPath(img, path)) {
+      std::cerr << "(Critical) Failed to plan path" << std::endl;
+      return false;
+    }
     cvWaitKey(0);
   }
-  //   Path path;
-  //   if (!rp.planPath(img, path)) {
-  //     std::cerr << "(Critical) Failed to plan path" << std::endl;
-  //     return false;
-  //   }
 
   //   while (true) {
   //     std::vector<double> state;

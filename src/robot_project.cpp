@@ -22,14 +22,30 @@ bool RobotProject::preprocessMap(cv::Mat const& img) {
   arena.parseImage(img);
   cout << "arena parsed from image" << endl;
 
+  cv::imshow("Arena", arena.topView);
+
   return true;
 }
 
 // Method invoked when a new path must be planned (detect initial robot
 // position from img)
 bool RobotProject::planPath(cv::Mat const& img, Path& path) {
-  // aa
-  return false;
+  cv::Mat a(arena.topView.rows, arena.topView.cols, CV_8UC3,
+            Scalar(100, 100, 100));
+
+  display = a;
+
+  pf.fromArena(arena);
+
+  pf.drawMapOn(display);
+  cv::imshow("Arena pf", display);
+
+  pf.testClick(60, 60);
+
+  pf.drawMapOn(display);
+  cv::imshow("Arena with path", display);
+
+  return true;
 }
 
 // Method invoked periodically to determine the position of the robot within
