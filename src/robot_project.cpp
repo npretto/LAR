@@ -19,7 +19,8 @@ RobotProject::RobotProject(int argc, char* argv[]) {
 bool RobotProject::preprocessMap(cv::Mat const& img) {
   cout << "about to parse arena " << endl;
 
-  arena.parseImage(img);
+  if (arena.parseImage(img) == false) return false;
+
   cout << "arena parsed from image" << endl;
 
   cv::imshow("Arena", arena.topView);
