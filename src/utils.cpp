@@ -5,8 +5,8 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/opencv.hpp>
 #include <string>
-#include "../main.h"
 #include "./dubins/dubins.c"
+#include "./main.h"
 
 using namespace std;
 using namespace cv;

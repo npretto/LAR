@@ -6,9 +6,9 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/opencv.hpp>
 #include <string>
-#include "../main.h"
 #include "./Arena.cpp"
 #include "./DigitOCR.cpp"
+#include "./main.h"
 #include "./utils.cpp"
 
 using namespace std;
