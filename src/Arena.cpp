@@ -11,6 +11,12 @@
 using namespace std;
 using namespace cv;
 
+struct sort_atan {
+  inline bool operator()(const Point2f &p1, const Point2f &p2) {
+    return (atan2(p1.y, p1.x) < atan2(p2.y, p2.x));
+  }
+};
+
 struct POI {
   Point3f position;
   char c;
@@ -32,7 +38,9 @@ class Arena {
  public:
   static const int width = 500;
   static const int height = 750;
-  cv::Mat topView;  // clean top-view, as in input
+  cv::Mat topView;        // clean top-view, as in input
+  cv::Mat topViewAt16cm;  // at the robot level
+
   cv::Mat topView_hsv;
 
   cv::Mat topViewAnnotated;  // top-view with stuff on it
@@ -52,21 +60,24 @@ class Arena {
     return true;
   }
 
-  void parseImage(cv::Mat input, bool display = false) {
+  bool parseImage(cv::Mat input, bool display = false) {
     obstacles.clear();
     goal.clear();
     POIs.clear();
 
     getTopView(input, false);
+    if (!getTopViewAt16cm(input, true)) return false;
 
     cout << "find obstacles" << endl;
-    findObstacles(true);
+    findObstacles(false);
 
     cout << "findGoal" << endl;
     findGoal(false);
 
     cout << "findPOIs" << endl;
     findPOIs(false);
+
+    return true;
   }
 
   static bool comparePOI(const POI &p1, const POI &p2) { return p1.c < p2.c; }
@@ -199,6 +210,95 @@ class Arena {
                  cv::LINE_AA);
 
     if (display) cv::imshow("blue_mask_eroded", blue_mask);
+  }
+
+  bool getTopViewAt16cm(cv::Mat input, bool debugView = false) {
+    cv::Mat topView_hsv, white_mask;
+    cv::cvtColor(input, topView_hsv, cv::COLOR_BGR2HSV);
+
+    // cv::inRange(topView_hsv, cv::Scalar(70, 0, 150), cv::Scalar(240, 50,
+    // 255),
+    //             white_mask);
+
+    cv::inRange(topView_hsv, cv::Scalar(70, 0, 150), cv::Scalar(240, 70, 255),
+                white_mask);
+
+    if (debugView) cv::imshow("gray_mask", white_mask);
+
+    // u::erode(white_mask, 8);
+    // u::dilate(white_mask, 3);
+    // u::erode(white_mask, 8);
+    // u::dilate(white_mask, 3);
+    u::blur(white_mask, 5, 5);
+
+    std::vector<Vec3f> circles;
+
+    cv::HoughCircles(white_mask, circles, HOUGH_GRADIENT,
+                     1,    // a
+                     30,   // min distance
+                     30,   // p1
+                     20,   // p2 : lower => more circles
+                     11,   // min radius
+                     25);  // max radius
+
+    cout << "trovati " << circles.size() << " cerchi" << endl;
+
+    cv::Mat circles_pic(white_mask.rows, white_mask.cols, CV_8UC3,
+                        Scalar(100, 100, 100));
+
+    for (size_t i = 0; i < circles.size(); i++) {
+      Vec3i c = circles[i];
+
+      circle(circles_pic, Point(c[0], c[1]), c[2], Scalar(255, 100, 100), 5,
+             LINE_AA);
+    }
+
+    if (debugView) cv::imshow("circles", circles_pic);
+
+    if (circles.size() != 4) return false;
+
+    // "flatten" the map to a rectangular image
+    // std::vector<cv::Point2f> desidered = {
+    //     cv::Point2f(width, 0), cv::Point2f(width, height),
+    //     cv::Point2f(0, height), cv::Point2f(0, 0)
+
+    // };
+
+    std::vector<cv::Point2f> desidered = {
+        cv::Point2f(width, 0), cv::Point2f(width, height),
+        cv::Point2f(0, height), cv::Point2f(0, 0)
+
+    };
+
+    vector<Point2f> detected;
+    Point2f center(0, 0);
+    for (auto c : circles) {
+      center += Point2f(c[0], c[1]);
+      cout << c[0] << ", " << c[1] << endl;
+      detected.push_back(Point2f(c[0], c[1]));
+    }
+    center = center / 4;
+
+    for (auto &p : detected) {
+      p -= center;
+    }
+
+    sort(detected.begin(), detected.end(), sort_atan());
+
+    for (auto &p : detected) {
+      p += center;
+    }
+
+    // reverse(detected.begin(), detected.end());
+
+    cv::Mat transform = getPerspectiveTransform(detected, desidered);
+
+    cv::warpPerspective(input, topViewAt16cm, transform,
+                        cv::Size(width, height));
+
+    imshow("topViewAt16cm", topViewAt16cm);
+
+    return true;
   }
 
   void getTopView(cv::Mat input, bool debugView = false) {
