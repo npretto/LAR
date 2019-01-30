@@ -4,3 +4,5 @@
 *.out
 
 calibration\.xml
+
+\.DS_Store
