@@ -52,6 +52,6 @@ bool RobotProject::planPath(cv::Mat const& img, Path& path) {
 // Method invoked periodically to determine the position of the robot within
 // the map. The output state is a vector of three elements, x, y and theta.
 bool RobotProject::localize(cv::Mat const& img, std::vector<double>& state) {
-  return false;
+  return arena.findRobot(img, state);
 }
 // };

@@ -25,7 +25,7 @@ void erode(const cv::Mat &image, int size = 5) {
   cv::erode(image, image, kernel);
 }
 
-void blur(const cv::Mat &image, int size = 5, int value =5) {
+void blur(const cv::Mat &image, int size = 5, int value = 5) {
   cv::GaussianBlur(image, image, cv::Size(size, size), value, value);
 }
 

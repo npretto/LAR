@@ -38,8 +38,8 @@ class Arena {
  public:
   static const int width = 500;
   static const int height = 750;
-  cv::Mat topView;        // clean top-view, as in input
-  cv::Mat topViewAt16cm;  // at the robot level
+  cv::Mat topView;  // clean top-view, as in input
+  // cv::Mat topViewAt16cm;  // at the robot level
 
   cv::Mat topView_hsv;
 
@@ -66,7 +66,7 @@ class Arena {
     POIs.clear();
 
     getTopView(input, false);
-    if (!getTopViewAt16cm(input, true)) return false;
+    // if (!getTopViewAt16cm(input, true)) return false;
 
     cout << "find obstacles" << endl;
     findObstacles(false);
@@ -212,7 +212,8 @@ class Arena {
     if (display) cv::imshow("blue_mask_eroded", blue_mask);
   }
 
-  bool getTopViewAt16cm(cv::Mat input, bool debugView = false) {
+  bool getTopViewAt16cm(cv::Mat input, cv::Mat &output,
+                        bool debugView = false) {
     cv::Mat topView_hsv, white_mask;
     cv::cvtColor(input, topView_hsv, cv::COLOR_BGR2HSV);
 
@@ -293,10 +294,9 @@ class Arena {
 
     cv::Mat transform = getPerspectiveTransform(detected, desidered);
 
-    cv::warpPerspective(input, topViewAt16cm, transform,
-                        cv::Size(width, height));
+    cv::warpPerspective(input, output, transform, cv::Size(width, height));
 
-    imshow("topViewAt16cm", topViewAt16cm);
+    // imshow("topViewAt16cm", output);
 
     return true;
   }
@@ -376,9 +376,9 @@ class Arena {
 
     cout << "arena_approx.size: " << arena_approx.size() << endl;
 
-    // in case it has more than 4 edges for some reason, i reduce it to 4 edges,
-    // it should happen only with the outer border but i'll keep it here for
-    // safety
+    // in case it has more than 4 edges for some reason, i reduce it to 4
+    // edges, it should happen only with the outer border but i'll keep it
+    // here for safety
     int eps = epsilon;
     while (arena_approx.size() > 4) {
       approxPolyDP(arena_approx, arena_approx, eps, true);
@@ -443,5 +443,116 @@ class Arena {
     std::vector<std::vector<cv::Point>> a = {goal};
 
     drawContours(image, a, -1, cv::Scalar(255, 20, 20), 3, cv::LINE_AA);
+  }
+
+  bool findRobot(cv::Mat const &img, std::vector<double> &state) {
+    const bool display = true;
+
+    cv::Mat topViewRobotAt16(img.rows, img.cols, CV_8UC3,
+                             Scalar(100, 100, 100));
+
+    getTopViewAt16cm(img, topViewRobotAt16);
+
+    cv::imshow("topViewRobotAt16", topViewRobotAt16);
+    cv::Mat hsv, blue_mask;
+
+    cv::cvtColor(topViewRobotAt16, hsv, cv::COLOR_BGR2HSV);
+
+    const int target = 180 / 2;
+
+    cv::inRange(hsv, cv::Scalar(target - 15, 100, 100),
+                cv::Scalar(target + 25, 160, 160), blue_mask);
+
+    if (display) cv::imshow("blue_mask", blue_mask);
+
+    cvWaitKey(0);
+
+    // u::erode(blue_mask, 1);
+    // u::blur(blue_mask, 3, 3);
+    // u::dilate(blue_mask, 2);
+
+    std::vector<std::vector<cv::Point>> contours, approximation;
+
+    cout << " robot_projecte.cpp 01" << endl;
+
+    cv::findContours(blue_mask, contours, cv::RETR_LIST,
+                     cv::CHAIN_APPROX_SIMPLE);
+    cout << " robot_projecte.cpp 02" << endl;
+
+    drawContours(topViewRobotAt16, contours, -1, cv::Scalar(255, 20, 20), 3,
+                 cv::LINE_AA);
+    cout << " robot_projecte.cpp 03" << endl;
+
+    if (display) cv::imshow("topViewRobotAt16", topViewRobotAt16);
+    if (display) cv::imshow("blue_mask_eroded", blue_mask);
+
+    // cvWaitKey(0);
+
+    std::vector<cv::Point> robot;
+
+    std::vector<cv::Point> approx_curve;
+    for (int i = 0; i < contours.size(); ++i) {
+      approxPolyDP(contours[i], approx_curve, 5, true);
+      approximation = {approx_curve};
+      cout << " robot_projecte.cpp 40+++" << endl;
+
+      if (display)
+        drawContours(topViewRobotAt16, approximation, -1,
+                     cv::Scalar(20, 20, 255), 1, cv::LINE_AA);
+      if (display) cv::imshow("topViewRobotAt16", topViewRobotAt16);
+
+      double area = contourArea(contours[i]);
+      cout << area << endl;
+      if (area > 1000) {
+        robot = approx_curve;
+        cout << "TROVATO ROBOT" << endl;
+      }
+    }
+    cout << " robot_projecte.cpp 50" << endl;
+
+    std::vector<std::vector<cv::Point>> a = {robot};
+
+    drawContours(topViewRobotAt16, a, -1, cv::Scalar(255, 255, 255), 2,
+                 cv::LINE_AA);
+    cout << " robot_projecte.cpp 55 PENE" << endl;
+
+    cout << " robot_projecte.cpp 60" << endl;
+
+    if (robot.size() == 3) {
+      cout << "robot trovato" << endl;
+      auto b = (robot.at(0) + robot.at(1) + robot.at(2)) / 3;
+
+      Point front;
+
+      auto l1 = norm(robot.at(0) - robot.at(1));
+      auto l2 = norm(robot.at(1) - robot.at(2));
+      auto l3 = norm(robot.at(2) - robot.at(0));
+
+      if (l1 < l2 && l1 < l3) {
+        front = (robot.at(0) + robot.at(1)) / 2;
+      } else if (l2 < l1 && l2 < l3) {
+        front = (robot.at(1) + robot.at(2)) / 2;
+      } else if (l3 < l1 && l3 < l2) {
+        front = (robot.at(2) + robot.at(0)) / 2;
+      }
+
+      auto direction = front - b;
+
+      state.push_back(b.x);
+      state.push_back(b.y);
+      state.push_back(atan2(direction.y, direction.x));
+
+      if (display)
+        circle(topViewRobotAt16, b, 4, Scalar(255, 255, 255), 5, LINE_AA);
+
+      if (display)
+        circle(topViewRobotAt16, front, 3, Scalar(120, 255, 120), 3, LINE_AA);
+
+      if (display) cv::imshow("topViewRobotAt16", topViewRobotAt16);
+
+      return true;
+    } else {
+      return false;
+    }
   }
 };
