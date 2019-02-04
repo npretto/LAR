@@ -230,7 +230,7 @@ class Arena {
     // u::dilate(white_mask, 3);
     // u::erode(white_mask, 8);
     // u::dilate(white_mask, 3);
-    u::blur(white_mask, 5, 5);
+    // u::blur(white_mask, 5, 5);
 
     std::vector<Vec3f> circles;
 
@@ -458,10 +458,10 @@ class Arena {
 
     cv::cvtColor(topViewRobotAt16, hsv, cv::COLOR_BGR2HSV);
 
-    const int target = 180 / 2;
+    const int target = 184 / 2;
 
-    cv::inRange(hsv, cv::Scalar(target - 15, 100, 100),
-                cv::Scalar(target + 25, 160, 160), blue_mask);
+    cv::inRange(hsv, cv::Scalar(target - 25, 90, 90),
+                cv::Scalar(target + 35, 190, 190), blue_mask);
 
     if (display) cv::imshow("blue_mask", blue_mask);
 
@@ -502,18 +502,21 @@ class Arena {
       if (display) cv::imshow("topViewRobotAt16", topViewRobotAt16);
 
       double area = contourArea(contours[i]);
-      cout << area << endl;
-      if (area > 1000) {
+      cout << "> " << approx_curve.size() << "  " << area << endl;
+      if (area > 1000 && approx_curve.size() == 3) {
         robot = approx_curve;
         cout << "TROVATO ROBOT" << endl;
       }
     }
     cout << " robot_projecte.cpp 50" << endl;
+    if (display) cv::imshow("topViewRobotAt16", topViewRobotAt16);
+    cvWaitKey(0);
 
     std::vector<std::vector<cv::Point>> a = {robot};
+    if (robot.size() > 0)
+      drawContours(topViewRobotAt16, a, -1, cv::Scalar(255, 255, 255), 2,
+                   cv::LINE_AA);
 
-    drawContours(topViewRobotAt16, a, -1, cv::Scalar(255, 255, 255), 2,
-                 cv::LINE_AA);
     cout << " robot_projecte.cpp 55 PENE" << endl;
 
     cout << " robot_projecte.cpp 60" << endl;

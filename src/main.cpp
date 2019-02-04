@@ -21,7 +21,7 @@ float pixelToCm(float pixels) { return pixels / Arena::width * MAP_WIDTH; }
 float cmToPixels(float cm) { return cm / MAP_WIDTH * Arena::width; }
 
 float safetyDistance = cmToPixels(3);
-float robotRadius = 30;
+float robotRadius = 15;
 
 CalibratedCamera camera;
 Arena *arena;
@@ -37,7 +37,7 @@ static void click(int x, int y) {
   arena->drawMapOn(display);
 
   // vector<GraphNode *> path =
-  pf->testClick(x, y);
+  pf->testClick(x, y, 0);
   pf->drawMapOn(display);
   pf->drawPath(display);
 

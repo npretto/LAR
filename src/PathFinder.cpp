@@ -534,7 +534,7 @@ class PathFinder {
     return vectors;
   }
 
-  void testClick(int x, int y) {
+  void testClick(int x, int y, float direction) {
     cout << x << "  " << y << endl;
     // const Point a(300, 350);
     GraphNode *start = getClosestNode(Point(x, y));
@@ -583,6 +583,8 @@ class PathFinder {
       vectorFlattened.insert(vectorFlattened.end(), s.begin(), s.end());
     }
 
+    vectorFlattened.at(0).z = direction;
+
     dubinsPath = vectorsToDubins(vectorFlattened);
 
     cv::imshow("Arena parsed", display);
@@ -592,10 +594,10 @@ class PathFinder {
       cout << "simplify" << endl;
       vectorFlattened = simplify(vectorFlattened);
 
-      // display = Scalar(15, 15, 15);
-      // arena.drawMapOn(display);
-      // drawMapOn(display);
-      // drawPath(display);
+      display = Scalar(15, 15, 15);
+      arena.drawMapOn(display);
+      drawMapOn(display);
+      drawPath(display);
       for (auto vector : vectorFlattened) {
         const Scalar randColor(rand() * 255, rand() * 255, rand() * 255);
         const auto &a = vector;
@@ -604,9 +606,9 @@ class PathFinder {
         circle(display, Point(vector.x, vector.y), 4, Scalar(255, 255, 255), 5,
                LINE_AA);
       }
-      // waitKey();
-      // cv::imshow("Arena parsed", display);
-      // waitKey(1);
+      waitKey();
+      cv::imshow("Arena parsed", display);
+      waitKey(1);
 
       dubinsPath = vectorsToDubins(vectorFlattened);
     }

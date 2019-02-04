@@ -41,7 +41,17 @@ bool RobotProject::planPath(cv::Mat const& img, Path& path) {
   pf.drawMapOn(display);
   cv::imshow("Arena pf", display);
 
-  pf.testClick(60, 60);
+  std::vector<double> state;
+  if (!arena.findRobot(img, state)) {
+    cout << "ROBOT NOT FOUND, ABORT" << endl;
+    return false;
+  }
+
+  int dist = 40;
+  float theta = state.at(2);
+
+  pf.testClick(state.at(0) + dist * sin(theta), state.at(1) + dist * cos(theta),
+               theta);
 
   pf.drawMapOn(display);
   cv::imshow("Arena with path", display);
