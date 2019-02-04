@@ -21,7 +21,7 @@ float pixelToCm(float pixels) { return pixels / Arena::width * MAP_WIDTH; }
 float cmToPixels(float cm) { return cm / MAP_WIDTH * Arena::width; }
 
 float safetyDistance = cmToPixels(3);
-float robotRadius = 15;
+float robotRadius = cmToPixels(7);
 
 CalibratedCamera camera;
 Arena *arena;

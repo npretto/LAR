@@ -391,25 +391,50 @@ class Arena {
     std::vector<std::vector<cv::Point>> bb = {arena};
 
     // "flatten" the map to a rectangular image
+    // std::vector<cv::Point2f> desidered = {
+    //     cv::Point2f(0, 0),
+    //     cv::Point2f(width, 0),
+    //     cv::Point2f(width, height),
+    //     cv::Point2f(0, height),
+
+    // };
+
+    // // detect if the image is "rotated"
+    // if (cv::norm(arena_approx.at(0) - arena_approx.at(1)) >
+    //     cv::norm(arena_approx.at(1) - arena_approx.at(2))) {
+    //   cout << "IMAGE IS ROTATED " << endl;
+    //   desidered.push_back(desidered.at(0));
+    //   desidered.erase(desidered.begin());
+    // }
+
     std::vector<cv::Point2f> desidered = {
-        cv::Point2f(0, 0),
-        cv::Point2f(width, 0),
-        cv::Point2f(width, height),
-        cv::Point2f(0, height),
+        cv::Point2f(width, 0), cv::Point2f(width, height),
+        cv::Point2f(0, height), cv::Point2f(0, 0)
 
     };
 
-    // detect if the image is "rotated"
-    if (cv::norm(arena_approx.at(0) - arena_approx.at(1)) >
-        cv::norm(arena_approx.at(1) - arena_approx.at(2))) {
-      cout << "IMAGE IS ROTATED " << endl;
-      desidered.push_back(desidered.at(0));
-      desidered.erase(desidered.begin());
+    vector<Point2f> detected;
+    Point2f center(0, 0);
+    for (auto c : arena_approx) {
+      center += Point2f(c.x, c.y);
+      cout << c.x << ", " << c.y << endl;
+      detected.push_back(Point2f(c.x, c.y));
+    }
+    center = center / 4;
+
+    for (auto &p : detected) {
+      p -= center;
     }
 
-    vector<Point2f> floats(arena_approx.begin(), arena_approx.end());
+    sort(detected.begin(), detected.end(), sort_atan());
 
-    cv::Mat transform = getPerspectiveTransform(floats, desidered);
+    for (auto &p : detected) {
+      p += center;
+    }
+
+    // reverse(detected.begin(), detected.end());
+
+    cv::Mat transform = getPerspectiveTransform(detected, desidered);
 
     cv::warpPerspective(input, topView, transform, cv::Size(width, height));
 

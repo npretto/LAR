@@ -606,7 +606,7 @@ class PathFinder {
         circle(display, Point(vector.x, vector.y), 4, Scalar(255, 255, 255), 5,
                LINE_AA);
       }
-      waitKey();
+      // waitKey();
       cv::imshow("Arena parsed", display);
       waitKey(1);
 
