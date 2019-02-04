@@ -50,11 +50,25 @@ bool RobotProject::planPath(cv::Mat const& img, Path& path) {
   int dist = 40;
   float theta = state.at(2);
 
-  pf.testClick(state.at(0) + dist * sin(theta), state.at(1) + dist * cos(theta),
-               theta);
+  vector<Point3f> dubins = pf.testClick(state.at(0) + dist * sin(theta),
+                                        state.at(1) + dist * cos(theta), theta);
 
   pf.drawMapOn(display);
   cv::imshow("Arena with path", display);
+
+  std::vector<Pose> points;
+
+  float distance = 0;
+
+  for (auto p : dubins) {
+    distance += 10;
+    Pose pose(pixelToCm(distance) / 100, static_cast<double>(p.x),
+              static_cast<double>(p.y), static_cast<double>(p.z),
+              static_cast<double>(0.0));  // positivo a sinistra
+    points.push_back(pose);
+  }
+
+  path.setPoints(points);
 
   return true;
 }

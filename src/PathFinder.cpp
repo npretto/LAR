@@ -534,7 +534,7 @@ class PathFinder {
     return vectors;
   }
 
-  void testClick(int x, int y, float direction) {
+  vector<Point3f> testClick(int x, int y, float direction) {
     cout << x << "  " << y << endl;
     // const Point a(300, 350);
     GraphNode *start = getClosestNode(Point(x, y));
@@ -653,6 +653,8 @@ class PathFinder {
     // }
 
     cout << "done with dubins" << endl;
+
+    return dubinsPath;
   }
 
   // thanks to http://paulbourke.net/geometry/circlesphere/
