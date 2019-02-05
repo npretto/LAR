@@ -1,10 +1,8 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-
-
-#include <tesseract/baseapi.h>  //this has to stay on top otherwise the console will be full of errors :(
 #include <leptonica/allheaders.h>
+#include <tesseract/baseapi.h>  //this has to stay on top otherwise the console will be full of errors :(
 #include <iostream>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -32,7 +30,5 @@ extern cv::Mat display;
 
 float pixelToCm(float pixels);
 float cmToPixels(float cm);
-
-#include "./main.h"
 
 #endif

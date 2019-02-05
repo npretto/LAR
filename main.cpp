@@ -12,52 +12,54 @@ using namespace cv;
 
 #include "./src/robot_project.h"
 
-// int main(int argc, char* argv[]) {
-//    vector<cv::String> fn;  // std::string in opencv2.4, but cv::String in 3.0
-//    cv::glob("./data/map", fn, false);  // read file names inside the folder
-//    cout << "folder letta" << endl;
+int main(int argc, char* argv[]) {
+  cout << "MMMMM  " << endl;
 
-//    for (int i = 0; i < fn.size(); i++) {
-//      cout << "inizio ciclo" << endl;
+  vector<cv::String> fn;  // std::string in opencv2.4, but cv::String in 3.0
+  cv::glob("./data/map", fn, false);  // read file names inside the folder
+  cout << "folder letta" << endl;
 
-//      auto file = fn.at(i);
+  for (int i = 0; i < fn.size(); i++) {
+    cout << "inizio ciclo" << endl;
 
-//     cv::Mat img = cv::imread(file);
+    auto file = fn.at(i);
 
-//     RobotProject rp(argc, argv);
+    cv::Mat img = cv::imread(file);
 
-//     if (!rp.preprocessMap(img)) {
-//       std::cerr << "(Critical) Failed to preprocess map" << std::endl;
-//     }
-//     cvWaitKey(0);
+    RobotProject rp(argc, argv);
 
-//     std::vector<double> state;
-//     cout << "localize" << endl;
+    if (!rp.preprocessMap(img)) {
+      std::cerr << "(Critical) Failed to preprocess map" << std::endl;
+    }
+    cvWaitKey(0);
 
-//     if (!rp.localize(img, state)) {
-//       std::cerr << "(Warning) Failed localization" << std::endl;
-//       continue;
-//     }
-//     cvWaitKey(0);
+    std::vector<double> state;
+    cout << "localize" << endl;
 
-//     Path path;
-//     if (!rp.planPath(img, path)) {
-//       std::cerr << "(Critical) Failed to plan path" << std::endl;
-//       return false;
-//     }
-//     cvWaitKey(0);
+    if (!rp.localize(img, state)) {
+      std::cerr << "(Warning) Failed localization" << std::endl;
+      continue;
+    }
+    cvWaitKey(0);
 
-//     cout << "mmm? " << endl;
-//     cvWaitKey(0);
-//   }
+    Path path;
+    if (!rp.planPath(img, path)) {
+      std::cerr << "(Critical) Failed to plan path" << std::endl;
+      return false;
+    }
+    cvWaitKey(0);
 
-//     // while (true) {
-//     //   std::vector<double> state;
-//     //   cout << "localize" << endl;
+    cout << "mmm? " << endl;
+    cvWaitKey(0);
+  }
 
-//     //   if (!rp.localize(img, state)) {
-//     //     std::cerr << "(Warning) Failed localization" << std::endl;
-//     //     continue;
-//     //   }
-//     // }
-// }
+  // while (true) {
+  //   std::vector<double> state;
+  //   cout << "localize" << endl;
+
+  //   if (!rp.localize(img, state)) {
+  //     std::cerr << "(Warning) Failed localization" << std::endl;
+  //     continue;
+  //   }
+  // }
+}
