@@ -1,58 +1,23 @@
-#pragma once
-#include <iostream>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/opencv.hpp>
-#include <string>
-#include "./DigitOCR.cpp"
-#include "./utils.cpp"
+
+#include "./Arena.h"
 
 using namespace std;
 using namespace cv;
 
-struct sort_atan {
-  inline bool operator()(const Point2f &p1, const Point2f &p2) {
-    return (atan2(p1.y, p1.x) < atan2(p2.y, p2.x));
-  }
-};
 
-struct POI {
-  Point3f position;
-  char c;
-};
-
-class Arena {
- private:
-  DigitOCR ocr;
-
-  cv::Scalar getColor()  // get "random" color to draw
-  {
+cv::Scalar Arena::getColor()  // get "random" color to draw
+{
     static int i = 0;
     cv::Scalar colors[] = {cv::Scalar(200, 10, 10), cv::Scalar(0, 200, 0),
                            cv::Scalar(0, 0, 200)};
 
     return colors[i++ % 3];
-  }
+}
 
- public:
-  static const int width = 500;
-  static const int height = 750;
-  cv::Mat topView;  // clean top-view, as in input
-  // cv::Mat topViewAt16cm;  // at the robot level
+float Arena::getWidth() { return topView.cols; }
+float  Arena::getHeight() { return topView.rows; }
 
-  cv::Mat topView_hsv;
-
-  cv::Mat topViewAnnotated;  // top-view with stuff on it
-
-  std::vector<std::vector<cv::Point>> obstacles;
-  std::vector<cv::Point> goal;
-  std::vector<POI> POIs;
-
-  float getWidth() { return topView.cols; }
-  float getHeight() { return topView.rows; }
-
-  bool isPointInside(float x, float y, float buffer = 0) {
+bool  Arena::isPointInside(float x, float y, float buffer) {
     if (x < buffer || y < buffer) return false;
     if (x > (getWidth() - buffer)) return false;
     if (y > (getHeight() - buffer)) return false;
@@ -60,7 +25,7 @@ class Arena {
     return true;
   }
 
-  bool parseImage(cv::Mat input, bool display = false) {
+bool  Arena::parseImage(cv::Mat input, bool display) {
     obstacles.clear();
     goal.clear();
     POIs.clear();
@@ -80,9 +45,9 @@ class Arena {
     return true;
   }
 
-  static bool comparePOI(const POI &p1, const POI &p2) { return p1.c < p2.c; }
+  bool  Arena::comparePOI(const POI &p1, const POI &p2) { return p1.c < p2.c; }
 
-  void findPOIs(bool display = false) {
+  void  Arena::findPOIs(bool display) {
     cv::Mat green_mask;
 
     const int color = 150 / 2;
@@ -126,7 +91,7 @@ class Arena {
     }
   }
 
-  void findObstacles(bool display = false) {
+  void  Arena::findObstacles(bool display) {
     obstacles.clear();
 
     cv::Mat red_mask;
@@ -169,7 +134,7 @@ class Arena {
     }
   }
 
-  void findGoal(bool display = false) {
+  void  Arena::findGoal(bool display) {
     cv::Mat blue_mask;
 
     cv::inRange(topView_hsv, cv::Scalar(140 - 55, 100, 50),
@@ -212,8 +177,8 @@ class Arena {
     if (display) cv::imshow("blue_mask_eroded", blue_mask);
   }
 
-  bool getTopViewAt16cm(cv::Mat input, cv::Mat &output,
-                        bool debugView = false) {
+  bool  Arena::getTopViewAt16cm(cv::Mat input, cv::Mat &output,
+                        bool debugView) {
     cv::Mat topView_hsv, white_mask;
     cv::cvtColor(input, topView_hsv, cv::COLOR_BGR2HSV);
 
@@ -224,13 +189,13 @@ class Arena {
     cv::inRange(topView_hsv, cv::Scalar(70, 0, 150), cv::Scalar(240, 70, 255),
                 white_mask);
 
-    if (debugView) cv::imshow("gray_mask", white_mask);
+    if (true) cv::imshow("gray_mask", white_mask);
 
     // u::erode(white_mask, 8);
     // u::dilate(white_mask, 3);
-    // u::erode(white_mask, 8);
+    //u::erode(white_mask, 3);
     // u::dilate(white_mask, 3);
-    // u::blur(white_mask, 5, 5);
+    u::blur(white_mask, 5, 5);
 
     std::vector<Vec3f> circles;
 
@@ -239,7 +204,7 @@ class Arena {
                      30,   // min distance
                      30,   // p1
                      20,   // p2 : lower => more circles
-                     11,   // min radius
+                     14,   // min radius
                      25);  // max radius
 
     cout << "trovati " << circles.size() << " cerchi" << endl;
@@ -254,7 +219,7 @@ class Arena {
              LINE_AA);
     }
 
-    if (debugView) cv::imshow("circles", circles_pic);
+    if (true) cv::imshow("circles", circles_pic);
 
     if (circles.size() != 4) return false;
 
@@ -301,7 +266,7 @@ class Arena {
     return true;
   }
 
-  void getTopView(cv::Mat input, bool debugView = false) {
+  void  Arena::getTopView(cv::Mat input, bool debugView) {
     cv::Mat topView_hsv, black_mask;
     cv::cvtColor(input, topView_hsv, cv::COLOR_BGR2HSV);
 
@@ -445,7 +410,7 @@ class Arena {
     return;
   }
 
-  void drawMapOn(cv::Mat &image) {
+  void  Arena::drawMapOn(cv::Mat &image) {
     // DRAW POIs
     for (size_t i = 0; i < POIs.size(); i++) {
       Point3f c = POIs[i].position;
@@ -470,7 +435,7 @@ class Arena {
     drawContours(image, a, -1, cv::Scalar(255, 20, 20), 3, cv::LINE_AA);
   }
 
-  bool findRobot(cv::Mat const &img, std::vector<double> &state) {
+  bool  Arena::findRobot(cv::Mat const &img, std::vector<double> &state) {
     const bool display = true;
 
     cv::Mat topViewRobotAt16(img.rows, img.cols, CV_8UC3,
@@ -490,10 +455,10 @@ class Arena {
 
     if (display) cv::imshow("blue_mask", blue_mask);
 
-    cvWaitKey(0);
+    // cvWaitKey(0);
 
     // u::erode(blue_mask, 1);
-    // u::blur(blue_mask, 3, 3);
+    u::blur(blue_mask, 3, 3);
     // u::dilate(blue_mask, 2);
 
     std::vector<std::vector<cv::Point>> contours, approximation;
@@ -535,16 +500,16 @@ class Arena {
     }
     cout << " robot_projecte.cpp 50" << endl;
     if (display) cv::imshow("topViewRobotAt16", topViewRobotAt16);
-    cvWaitKey(0);
+    // cvWaitKey(0);
 
     std::vector<std::vector<cv::Point>> a = {robot};
     if (robot.size() > 0)
       drawContours(topViewRobotAt16, a, -1, cv::Scalar(255, 255, 255), 2,
                    cv::LINE_AA);
 
-    cout << " robot_projecte.cpp 55 PENE" << endl;
+    cout << " robot_projecte.cpp 55" << endl;
 
-    cout << " robot_projecte.cpp 60" << endl;
+    cout << " robot_projecte.cpp 60 guarda mappa" << endl;
 
     if (robot.size() == 3) {
       cout << "robot trovato" << endl;
@@ -578,9 +543,13 @@ class Arena {
 
       if (display) cv::imshow("topViewRobotAt16", topViewRobotAt16);
 
+
+      //cvWaitKey(0);
+      //cvWaitKey(0);
+      //cvWaitKey(0);
+
       return true;
     } else {
       return false;
     }
   }
-};

@@ -1,35 +1,28 @@
-#pragma once
-#include <iostream>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/opencv.hpp>
-#include <string>
-#include "./dubins/dubins.c"
-#include "./main.h"
+#include "./utils.h"
+#include "dubins.h"
 
 using namespace std;
 using namespace cv;
 
 namespace u {
 
-void dilate(const cv::Mat &image, int size = 5) {
+void dilate(const cv::Mat &image, int size) {
   cv::Mat kernel = cv::getStructuringElement(
       cv::MORPH_RECT, cv::Size((size * 2) + 1, (size * 2) + 1));
   cv::dilate(image, image, kernel);
 }
 
-void erode(const cv::Mat &image, int size = 5) {
+void erode(const cv::Mat &image, int size ) {
   cv::Mat kernel = cv::getStructuringElement(
       cv::MORPH_RECT, cv::Size((size * 2) + 1, (size * 2) + 1));
   cv::erode(image, image, kernel);
 }
 
-void blur(const cv::Mat &image, int size = 5, int value = 5) {
+void blur(const cv::Mat &image, int size, int value) {
   cv::GaussianBlur(image, image, cv::Size(size, size), value, value);
 }
 
-void dilateErode(const cv::Mat &image, int size = 5) {
+void dilateErode(const cv::Mat &image, int size) {
   dilate(image, size);
   erode(image, size);
 }

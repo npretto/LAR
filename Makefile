@@ -1,20 +1,16 @@
-TARGET=main.out
 CXX=g++
-CXXFLAGS=`pkg-config --cflags tesseract opencv` -std=c++11 -O2
+CXXFLAGS=`pkg-config --cflags tesseract opencv` -std=c++11
 LDLIBS=`pkg-config --libs tesseract opencv`
 
-SRCS:=$(wildcard *.cpp)
+SRCS:=$(wildcard src/*.cpp)
 OBJS:=$(patsubst %.cpp,%.o,$(SRCS))
 
-all: $(TARGET)
+all: $(OBJS)
 
-$(TARGET): $(OBJS)
-	$(CXX) -o $@ $^ $(LDLIBS)
-
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $<
+src/%.o: src/%.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -rf $(TARGET) *.o
+	rm -rf src/*.o
 	
 .PHONY: all clean

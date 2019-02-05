@@ -1,20 +1,6 @@
-#pragma once
-#include <leptonica/allheaders.h>
-#include <tesseract/baseapi.h>  // Tesseract headers
-#include <iostream>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/opencv.hpp>
-#include <string>
-#include "./main.h"
-#include "./utils.cpp"
+#include "./DigitOCR.h"
 
-class DigitOCR {
- private:
-  tesseract::TessBaseAPI *ocr;
-
-  void toBlackMask(cv::Mat input, cv::Mat &output) {
+void DigitOCR::toBlackMask(cv::Mat input, cv::Mat &output) {
     cv::Mat hsv;
     cv::Mat green;
     cv::Mat black;
@@ -48,10 +34,8 @@ class DigitOCR {
     cv::moveWindow("digit_mask_eroded", 1100, 0);
   }
 
- public:
-  DigitOCR() {}
-
-  void init() {
+ 
+  void DigitOCR::init() {
     ocr = new tesseract::TessBaseAPI();  // Create Tesseract object
     ocr->Init(NULL, "eng");  // Initialize tesseract to use English (eng)
     ocr->SetPageSegMode(
@@ -62,7 +46,7 @@ class DigitOCR {
                      "012345689");  // Only digits are valid output
   }
 
-  char parse(cv::Mat image) {
+  char DigitOCR::parse(cv::Mat image) {
     cv::Mat black_mask;
     toBlackMask(image, black_mask);
     cv::imshow("digit", image);
@@ -127,8 +111,3 @@ class DigitOCR {
 
     return c;
   }
-
-  ~DigitOCR() {
-    ocr->End();  // destroy the ocr object (release resources)
-  }
-};

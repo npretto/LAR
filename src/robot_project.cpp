@@ -62,8 +62,8 @@ bool RobotProject::planPath(cv::Mat const& img, Path& path) {
 
   for (auto p : dubins) {
     distance += 10;
-    Pose pose(pixelToCm(distance) / 100, static_cast<double>(p.x),
-              static_cast<double>(p.y), static_cast<double>(p.z),
+    Pose pose(pixelToCm(distance) / 100, static_cast<double>(p.x)/100,
+              -static_cast<double>(p.y)/100, -static_cast<double>(p.z),
               static_cast<double>(0.0));  // positivo a sinistra
     points.push_back(pose);
   }
@@ -76,6 +76,21 @@ bool RobotProject::planPath(cv::Mat const& img, Path& path) {
 // Method invoked periodically to determine the position of the robot within
 // the map. The output state is a vector of three elements, x, y and theta.
 bool RobotProject::localize(cv::Mat const& img, std::vector<double>& state) {
-  return arena.findRobot(img, state);
+  //state.clear();
+
+  auto found = arena.findRobot(img, state);
+
+  if (found)
+  {
+    state[0] =  pixelToCm(state[0])/100;
+    state[1] = - pixelToCm(state[1])/100;
+    state[2] = -state[2];
+  }
+  //state[3]=-state[3];
+
+
+  //state.push_back(state[0]);
+
+  return found;
 }
 // };

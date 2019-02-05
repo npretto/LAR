@@ -1,55 +1,17 @@
 
-#pragma once
-#include <iostream>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/opencv.hpp>
-#include <string>
-#include "./Arena.cpp"
-#include "./DigitOCR.cpp"
-#include "./main.h"
-#include "./utils.cpp"
+#include "./PathFinder.h"
 
 using namespace std;
 using namespace cv;
 
-struct CircumscribedObstacle {
-  Point center;
-  float innerRadius;
-  float radius;
-};
-
-struct Edge;
-
-struct GraphNode {
-  Point center;
-  bool ok;
-  vector<Edge *> links;
-  float cost;
-  bool operator<(const GraphNode &rhs) const { return cost < rhs.cost; }
-};
-
-struct Compare {
-  bool operator()(const GraphNode *a, const GraphNode *b) const {
-    return a->cost > b->cost;
-  }
-};
 
 float heuristic(GraphNode *start, GraphNode *end) {
   // return 1;
   return cv::norm(start->center - end->center);
 }
 
-struct Edge {
-  GraphNode *a;
-  GraphNode *b;
-  float cost;
-};
 
-class PathFinder {
- private:
-  CircumscribedObstacle poligonToCircle(vector<cv::Point> points) {
+CircumscribedObstacle PathFinder::poligonToCircle(vector<cv::Point> points) {
     cv::Point2f center(0.0f, 0.0f);
     for (auto p : points) {
       center.x += p.x;
@@ -66,10 +28,10 @@ class PathFinder {
     }
 
     return CircumscribedObstacle{center, maxRadius, maxRadius + robotRadius};
-  }
+}
 
   // check che sia all'interno dell'arena e che sia fuori dagli ostacoli
-  bool isPointValid(float x, float y, float buffer = 0) {
+bool PathFinder::isPointValid(float x, float y, float buffer) {
     if (!arena.isPointInside(x, y, buffer)) return false;
 
     for (CircumscribedObstacle o : obstacles) {
@@ -77,7 +39,8 @@ class PathFinder {
     }
     return true;
   }
-  bool pathDoesNotCollide(vector<Point3f> points) {
+
+  bool PathFinder::pathDoesNotCollide(vector<Point3f> points) {
     vector<bool> poisVisited;
 
     for (const auto &p : points) {
@@ -87,7 +50,7 @@ class PathFinder {
     return true;
   }
 
-  bool pathVisitsAllPOIs(vector<Point3f> points) {
+  bool PathFinder::pathVisitsAllPOIs(vector<Point3f> points) {
     vector<bool> poisVisited;
     for (auto POI : arena.POIs) {
       poisVisited.push_back(false);
@@ -114,7 +77,7 @@ class PathFinder {
     return true;
   }
 
-  void createNodes(float distance) {
+  void PathFinder::createNodes(float distance) {
     int cols = arena.getWidth() / distance;
     int rows = arena.getHeight() / distance;
     for (int row = 0; row < rows; row++) {
@@ -151,7 +114,7 @@ class PathFinder {
       // nodesMap.push_back(rowVector);
     }
   }
-  bool pointInsideObstacles(const Point &a) {
+  bool PathFinder::pointInsideObstacles(const Point &a) {
     for (CircumscribedObstacle c : obstacles) {
       const Point p = c.center;
 
@@ -159,7 +122,7 @@ class PathFinder {
     }
     return false;
   }
-  void createSmartNodes() {
+  void PathFinder::createSmartNodes() {
     const float distance = 20;
 
     for (CircumscribedObstacle o : obstacles) {
@@ -194,7 +157,7 @@ class PathFinder {
     // }
   }
 
-  void createEdges(float distance) {
+  void PathFinder::createEdges(float distance) {
     for (int i = 0; i < nodes.size(); i++) {
       for (int j = i; j < nodes.size(); j++) {
         GraphNode *a = &nodes[i];
@@ -214,16 +177,8 @@ class PathFinder {
     }
   }
 
- public:
-  Arena arena;
-  vector<CircumscribedObstacle> obstacles;
-  // vector<vector<GraphNode>> nodesMap;
-  vector<GraphNode> nodes;
-  vector<Edge *> edges;
-  vector<vector<Point3f>> vectors;
-  vector<Point3f> dubinsPath;
-
-  void fromArena(Arena a) {
+ 
+  void PathFinder::fromArena(Arena a) {
     arena = a;
 
     for (auto polygon : arena.obstacles) {
@@ -246,7 +201,7 @@ class PathFinder {
     }
   }
 
-  void drawMapOn(const cv::Mat &image) {
+  void PathFinder::drawMapOn(const cv::Mat &image) {
     // circles that contains obstacles
     for (CircumscribedObstacle obstacle : obstacles) {
       circle(image, obstacle.center, obstacle.innerRadius, Scalar(20, 20, 100),
@@ -272,7 +227,7 @@ class PathFinder {
 
   // based on
   // https://www.redblobgames.com/pathfinding/a-star/implementation.html
-  vector<GraphNode *> getAStarPath(GraphNode *start, GraphNode *goal) {
+  vector<GraphNode *> PathFinder::getAStarPath(GraphNode *start, GraphNode *goal) {
     vector<GraphNode *> path;
 
     std::unordered_map<GraphNode *, GraphNode *> came_from;
@@ -331,7 +286,7 @@ class PathFinder {
     return path;
   }
 
-  void drawPath(Mat image) {
+  void PathFinder::drawPath(Mat image) {
     //  VECTORS
     int i = 0;
     for (auto vv : vectors) {
@@ -364,7 +319,7 @@ class PathFinder {
     }
   }
 
-  GraphNode *getClosestNode(Point p) {
+  GraphNode *PathFinder::getClosestNode(Point p) {
     GraphNode *closest;
     float minDistance = 10000;
     for (GraphNode &n : nodes) {
@@ -378,7 +333,7 @@ class PathFinder {
     return closest;
   }
 
-  vector<Point3f> vectorsToDubins(vector<Point3f> const &nodes) {
+  vector<Point3f> PathFinder::vectorsToDubins(vector<Point3f> const &nodes) {
     vector<Point3f> dubinsPath;
 
     int start = 0;
@@ -429,7 +384,7 @@ class PathFinder {
     return dubinsPath;
   }
 
-  vector<Point3f> simplify(vector<Point3f> vectors) {
+  vector<Point3f> PathFinder::simplify(vector<Point3f> vectors) {
     int index = rand() % (vectors.size() - 2);
 
     int start = index;
@@ -506,12 +461,12 @@ class PathFinder {
     return vectors;
   }
 
-  GraphNode *closestNodeToPOI(POI const &poi) {
+  GraphNode *PathFinder::closestNodeToPOI(POI const &poi) {
     Point point = Point(poi.position.x, poi.position.y);
     return getClosestNode(point);
   }
 
-  vector<Point3f> nodesToVectorPath(vector<GraphNode *> nodes) {
+  vector<Point3f> PathFinder::nodesToVectorPath(vector<GraphNode *> nodes) {
     vector<Point3f> vectors;
     cout << ">>>: nodes " << nodes.size() << endl;
 
@@ -534,7 +489,7 @@ class PathFinder {
     return vectors;
   }
 
-  vector<Point3f> testClick(int x, int y, float direction) {
+  vector<Point3f> PathFinder::testClick(int x, int y, float direction) {
     cout << x << "  " << y << endl;
     // const Point a(300, 350);
     GraphNode *start = getClosestNode(Point(x, y));
@@ -658,7 +613,7 @@ class PathFinder {
   }
 
   // thanks to http://paulbourke.net/geometry/circlesphere/
-  bool lineIntersectsWithObstacles(const Point &a, const Point &b) {
+  bool PathFinder::lineIntersectsWithObstacles(const Point &a, const Point &b) {
     for (CircumscribedObstacle c : obstacles) {
       const Point p = c.center;
 
@@ -694,4 +649,3 @@ class PathFinder {
     }
     return false;
   }
-};

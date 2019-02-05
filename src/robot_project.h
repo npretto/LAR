@@ -1,5 +1,8 @@
 #pragma once
 
+#include <tesseract/baseapi.h>
+#include <leptonica/allheaders.h>
+
 #include "./main.h"
 
 #include <opencv2/opencv.hpp>
@@ -8,8 +11,8 @@
 
 // #include "./main.cpp"
 
-#include "./Arena.cpp"
-#include "./PathFinder.cpp"
+#include "./Arena.h"
+#include "./PathFinder.h"
 
 // Define your own class RobotProject, that implements and exposes the following
 // methods. NB: The input images are already undistorted.
