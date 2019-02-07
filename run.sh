@@ -1,1 +1,1 @@
-make clean && make && ./main.out
+make && ./main.out
