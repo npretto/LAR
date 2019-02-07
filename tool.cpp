@@ -113,8 +113,8 @@ int main(int argc, char *argv[]) {
   cv::glob("./data/map", fn, false);  // read file names inside the folder
   cout << "folder letta" << endl;
 
-  const int TOTAL_H = 900;
-  const int TOTAL_W = 1300;
+  const int TOTAL_H = 700;
+  const int TOTAL_W = 1200;
   int w = 3;
   int h = 3;
   int cell_w = TOTAL_W / w;
@@ -159,36 +159,36 @@ int main(int argc, char *argv[]) {
 /** @function on_low_h_thresh_trackbar */
 void on_low_h_thresh_trackbar(int, void *) {
   low_h = min(high_h - 1, low_h);
-  setTrackbarPos("Low H", "Filtered Image", low_h);
+  setTrackbarPos("1 HUE LOW", "Trackbars", low_h);
 }
 //! [low]
 //! [high]
 /** @function on_high_h_thresh_trackbar */
 void on_high_h_thresh_trackbar(int, void *) {
   high_h = max(high_h, low_h + 1);
-  setTrackbarPos("High H", "Filtered Image", high_h);
+  setTrackbarPos("2 HUE HIGH", "Trackbars", high_h);
 }
 //![high]
 /** @function on_low_s_thresh_trackbar */
 void on_low_s_thresh_trackbar(int, void *) {
   low_s = min(high_s - 1, low_s);
-  setTrackbarPos("Low S", "Filtered Image", low_s);
+  setTrackbarPos("3 SAT LOW", "Trackbars", low_s);
 }
 
 /** @function on_high_s_thresh_trackbar */
 void on_high_s_thresh_trackbar(int, void *) {
   high_s = max(high_s, low_s + 1);
-  setTrackbarPos("High S", "Filtered Image", high_s);
+  setTrackbarPos("4 SAT HIGH", "Trackbars", high_s);
 }
 
 /** @function on_low_v_thresh_trackbar */
 void on_low_v_thresh_trackbar(int, void *) {
   low_v = min(high_v - 1, low_v);
-  setTrackbarPos("Low V", "Filtered Image", low_v);
+  setTrackbarPos("5 VALUE LOW", "Trackbars", low_v);
 }
 
 /** @function on_high_v_thresh_trackbar */
 void on_high_v_thresh_trackbar(int, void *) {
   high_v = max(high_v, low_v + 1);
-  setTrackbarPos("High V", "Filtered Image", high_v);
+  setTrackbarPos("6 VALUE HIGH", "Trackbars", high_v);
 }

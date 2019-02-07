@@ -33,13 +33,17 @@ bool RobotProject::preprocessMap(cv::Mat const& img) {
 bool RobotProject::planPath(cv::Mat const& img, Path& path) {
   cv::Mat a(arena.topView.rows, arena.topView.cols, CV_8UC3,
             Scalar(100, 100, 100));
+  cout << "RobotProject::planPath" << endl;
 
   display = a;
+  cout << "RobotProject::planPath3" << endl;
 
   pf.fromArena(arena);
+  cout << "RobotProject::planPath 4" << endl;
 
   pf.drawMapOn(display);
   cv::imshow("Arena pf", display);
+  cout << "RobotProject::planPath 5" << endl;
 
   std::vector<double> state;
   if (!arena.findRobot(img, state)) {
@@ -62,8 +66,8 @@ bool RobotProject::planPath(cv::Mat const& img, Path& path) {
 
   for (auto p : dubins) {
     distance += 10;
-    Pose pose(pixelToCm(distance) / 100, static_cast<double>(p.x)/100,
-              -static_cast<double>(p.y)/100, -static_cast<double>(p.z),
+    Pose pose(pixelToCm(distance) / 100, static_cast<double>(pixelToCm(p.x))/100,
+              -static_cast<double>(pixelToCm(p.y))/100, -static_cast<double>(p.z),
               static_cast<double>(0.0));  // positivo a sinistra
     points.push_back(pose);
   }
@@ -82,8 +86,8 @@ bool RobotProject::localize(cv::Mat const& img, std::vector<double>& state) {
 
   if (found)
   {
-    state[0] =  pixelToCm(state[0])/100;
-    state[1] = - pixelToCm(state[1])/100;
+    state[0] =  pixelToCm(state[0])/100.0;
+    state[1] = - pixelToCm(state[1])/100.0;
     state[2] = -state[2];
   }
   //state[3]=-state[3];

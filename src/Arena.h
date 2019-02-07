@@ -33,7 +33,7 @@ class Arena {
   static const int width = 500;
   static const int height = 750;
   cv::Mat topView;  // clean top-view, as in input
-  // cv::Mat topViewAt16cm;  // at the robot level
+  cv::Mat transform16cm;
 
   cv::Mat topView_hsv;
 

@@ -179,18 +179,21 @@ void PathFinder::createEdges(float distance) {
   }
 }
 
-void PathFinder::fromArena(Arena a) {
+void PathFinder::fromArena(Arena &a) {
   arena = a;
-
+  cout<< "100" <<endl;
   for (auto polygon : arena.obstacles) {
     obstacles.push_back(poligonToCircle(polygon));
   }
+  cout<< "200" <<endl;
 
   const float dist = NODES_DISTANCE;
   // node for each POI
   for (auto poi : arena.POIs) {
     nodes.push_back(GraphNode{Point(poi.position.x, poi.position.y), true});
   }
+  cout<< "300" <<endl;
+
   if (SMART_NODES) {
     createSmartNodes();
     createNodes(dist);
@@ -200,6 +203,8 @@ void PathFinder::fromArena(Arena a) {
     createNodes(dist);
     createEdges(dist * 3.15);
   }
+  cout<< "400" <<endl;
+
 }
 
 void PathFinder::drawMapOn(const cv::Mat &image) {

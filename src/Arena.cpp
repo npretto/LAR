@@ -175,6 +175,7 @@ void Arena::findGoal(bool display) {
 }
 
 bool Arena::getTopViewAt16cm(cv::Mat input, cv::Mat &output, bool debugView) {
+  if(transform16cm.cols==0){
   cv::Mat topView_hsv, white_mask;
   cv::cvtColor(input, topView_hsv, cv::COLOR_BGR2HSV);
 
@@ -253,9 +254,10 @@ bool Arena::getTopViewAt16cm(cv::Mat input, cv::Mat &output, bool debugView) {
 
   // reverse(detected.begin(), detected.end());
 
-  cv::Mat transform = getPerspectiveTransform(detected, desidered);
+  transform16cm = getPerspectiveTransform(detected, desidered);
+}
 
-  cv::warpPerspective(input, output, transform, cv::Size(width, height));
+  cv::warpPerspective(input, output, transform16cm, cv::Size(width, height));
 
   // imshow("topViewAt16cm", output);
 
@@ -432,20 +434,26 @@ void Arena::drawMapOn(cv::Mat &image) {
 
 bool Arena::findRobot(cv::Mat const &img, std::vector<double> &state) {
   const bool display = true;
+  cout << " 10" << endl;
 
   cv::Mat topViewRobotAt16(img.rows, img.cols, CV_8UC3, Scalar(100, 100, 100));
+  cout << " 20" << endl;
 
   getTopViewAt16cm(img, topViewRobotAt16);
+  cout << " 30" << endl;
 
   cv::imshow("topViewRobotAt16", topViewRobotAt16);
   cv::Mat hsv, blue_mask;
+  cout << " 40" << endl;
 
   cv::cvtColor(topViewRobotAt16, hsv, cv::COLOR_BGR2HSV);
 
   const int target = 184 / 2;
 
-  cv::inRange(hsv, cv::Scalar(target - 25, 90, 90),
-              cv::Scalar(target + 35, 190, 190), blue_mask);
+  // cv::inRange(hsv, cv::Scalar(target - 25, 90, 90),
+  //             cv::Scalar(target + 35, 190, 190), blue_mask);
+
+  filter(hsv,blue_mask, "robot");
 
   if (display) cv::imshow("blue_mask", blue_mask);
 
@@ -475,7 +483,7 @@ bool Arena::findRobot(cv::Mat const &img, std::vector<double> &state) {
 
   std::vector<cv::Point> approx_curve;
   for (int i = 0; i < contours.size(); ++i) {
-    approxPolyDP(contours[i], approx_curve, 5, true);
+    approxPolyDP(contours[i], approx_curve, 10, true);
     approximation = {approx_curve};
     cout << " robot_projecte.cpp 40+++" << endl;
 
@@ -503,6 +511,7 @@ bool Arena::findRobot(cv::Mat const &img, std::vector<double> &state) {
   cout << " robot_projecte.cpp 55" << endl;
 
   cout << " robot_projecte.cpp 60 guarda mappa" << endl;
+  // cvWaitKey(0);
 
   if (robot.size() == 3) {
     cout << "robot trovato" << endl;

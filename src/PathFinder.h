@@ -71,7 +71,7 @@ class PathFinder {
   vector<vector<Point3f>> vectors;
   vector<Point3f> dubinsPath;
 
-  void fromArena(Arena a);
+  void fromArena(Arena &a);
 
   void drawMapOn(const cv::Mat &image);
 
