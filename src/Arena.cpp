@@ -28,6 +28,8 @@ bool Arena::parseImage(cv::Mat input, bool display) {
   obstacles.clear();
   goal.clear();
   POIs.clear();
+  goalCenter.x = 0;
+  goalCenter.y = 0;
 
   getTopView(input, false);
   // if (!getTopViewAt16cm(input, true)) return false;
@@ -165,6 +167,16 @@ void Arena::findGoal(bool display) {
     }
   }
 
+  cout << " aa " << endl;
+  for (cv::Point p : approx_curve) {
+    goalCenter += p;
+  }
+  cout << " bb " << endl;
+
+  goalCenter.x = goalCenter.x / approx_curve.size();
+  goalCenter.y = goalCenter.y / approx_curve.size();
+  cout << " cc " << endl;
+
   std::vector<std::vector<cv::Point>> a = {approx_curve};
 
   // cvWaitKey();
@@ -175,87 +187,87 @@ void Arena::findGoal(bool display) {
 }
 
 bool Arena::getTopViewAt16cm(cv::Mat input, cv::Mat &output, bool debugView) {
-  if(transform16cm.cols==0){
-  cv::Mat topView_hsv, white_mask;
-  cv::cvtColor(input, topView_hsv, cv::COLOR_BGR2HSV);
+  if (transform16cm.cols == 0) {
+    cv::Mat topView_hsv, white_mask;
+    cv::cvtColor(input, topView_hsv, cv::COLOR_BGR2HSV);
 
-  // cv::inRange(topView_hsv, cv::Scalar(70, 0, 150), cv::Scalar(240, 50,
-  // 255),
-  //             white_mask);
+    // cv::inRange(topView_hsv, cv::Scalar(70, 0, 150), cv::Scalar(240, 50,
+    // 255),
+    //             white_mask);
 
-  cv::inRange(topView_hsv, cv::Scalar(70, 0, 150), cv::Scalar(240, 70, 255),
-              white_mask);
+    cv::inRange(topView_hsv, cv::Scalar(70, 0, 150), cv::Scalar(240, 70, 255),
+                white_mask);
 
-  if (true) cv::imshow("gray_mask", white_mask);
+    if (true) cv::imshow("gray_mask", white_mask);
 
-  // u::erode(white_mask, 8);
-  // u::dilate(white_mask, 3);
-  // u::erode(white_mask, 3);
-  // u::dilate(white_mask, 3);
-  u::blur(white_mask, 5, 5);
+    // u::erode(white_mask, 8);
+    // u::dilate(white_mask, 3);
+    // u::erode(white_mask, 3);
+    // u::dilate(white_mask, 3);
+    u::blur(white_mask, 5, 5);
 
-  std::vector<Vec3f> circles;
+    std::vector<Vec3f> circles;
 
-  cv::HoughCircles(white_mask, circles, HOUGH_GRADIENT,
-                   1,    // a
-                   30,   // min distance
-                   30,   // p1
-                   20,   // p2 : lower => more circles
-                   14,   // min radius
-                   25);  // max radius
+    cv::HoughCircles(white_mask, circles, HOUGH_GRADIENT,
+                     1,    // a
+                     30,   // min distance
+                     30,   // p1
+                     20,   // p2 : lower => more circles
+                     14,   // min radius
+                     25);  // max radius
 
-  cout << "trovati " << circles.size() << " cerchi" << endl;
+    cout << "trovati " << circles.size() << " cerchi" << endl;
 
-  cv::Mat circles_pic(white_mask.rows, white_mask.cols, CV_8UC3,
-                      Scalar(100, 100, 100));
+    cv::Mat circles_pic(white_mask.rows, white_mask.cols, CV_8UC3,
+                        Scalar(100, 100, 100));
 
-  for (size_t i = 0; i < circles.size(); i++) {
-    Vec3i c = circles[i];
+    for (size_t i = 0; i < circles.size(); i++) {
+      Vec3i c = circles[i];
 
-    circle(circles_pic, Point(c[0], c[1]), c[2], Scalar(255, 100, 100), 5,
-           LINE_AA);
+      circle(circles_pic, Point(c[0], c[1]), c[2], Scalar(255, 100, 100), 5,
+             LINE_AA);
+    }
+
+    if (true) cv::imshow("circles", circles_pic);
+
+    if (circles.size() != 4) return false;
+
+    // "flatten" the map to a rectangular image
+    // std::vector<cv::Point2f> desidered = {
+    //     cv::Point2f(width, 0), cv::Point2f(width, height),
+    //     cv::Point2f(0, height), cv::Point2f(0, 0)
+
+    // };
+
+    std::vector<cv::Point2f> desidered = {
+        cv::Point2f(width, 0), cv::Point2f(width, height),
+        cv::Point2f(0, height), cv::Point2f(0, 0)
+
+    };
+
+    vector<Point2f> detected;
+    Point2f center(0, 0);
+    for (auto c : circles) {
+      center += Point2f(c[0], c[1]);
+      cout << c[0] << ", " << c[1] << endl;
+      detected.push_back(Point2f(c[0], c[1]));
+    }
+    center = center / 4;
+
+    for (auto &p : detected) {
+      p -= center;
+    }
+
+    sort(detected.begin(), detected.end(), sort_atan());
+
+    for (auto &p : detected) {
+      p += center;
+    }
+
+    // reverse(detected.begin(), detected.end());
+
+    transform16cm = getPerspectiveTransform(detected, desidered);
   }
-
-  if (true) cv::imshow("circles", circles_pic);
-
-  if (circles.size() != 4) return false;
-
-  // "flatten" the map to a rectangular image
-  // std::vector<cv::Point2f> desidered = {
-  //     cv::Point2f(width, 0), cv::Point2f(width, height),
-  //     cv::Point2f(0, height), cv::Point2f(0, 0)
-
-  // };
-
-  std::vector<cv::Point2f> desidered = {
-      cv::Point2f(width, 0), cv::Point2f(width, height), cv::Point2f(0, height),
-      cv::Point2f(0, 0)
-
-  };
-
-  vector<Point2f> detected;
-  Point2f center(0, 0);
-  for (auto c : circles) {
-    center += Point2f(c[0], c[1]);
-    cout << c[0] << ", " << c[1] << endl;
-    detected.push_back(Point2f(c[0], c[1]));
-  }
-  center = center / 4;
-
-  for (auto &p : detected) {
-    p -= center;
-  }
-
-  sort(detected.begin(), detected.end(), sort_atan());
-
-  for (auto &p : detected) {
-    p += center;
-  }
-
-  // reverse(detected.begin(), detected.end());
-
-  transform16cm = getPerspectiveTransform(detected, desidered);
-}
 
   cv::warpPerspective(input, output, transform16cm, cv::Size(width, height));
 
@@ -358,7 +370,6 @@ void Arena::getTopView(cv::Mat input, bool debugView) {
   //     cv::Point2f(width, 0),
   //     cv::Point2f(width, height),
   //     cv::Point2f(0, height),
-
   // };
 
   // // detect if the image is "rotated"
@@ -453,7 +464,7 @@ bool Arena::findRobot(cv::Mat const &img, std::vector<double> &state) {
   // cv::inRange(hsv, cv::Scalar(target - 25, 90, 90),
   //             cv::Scalar(target + 35, 190, 190), blue_mask);
 
-  filter(hsv,blue_mask, "robot");
+  filter(hsv, blue_mask, "robot");
 
   if (display) cv::imshow("blue_mask", blue_mask);
 

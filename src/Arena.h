@@ -41,6 +41,7 @@ class Arena {
 
   std::vector<std::vector<cv::Point>> obstacles;
   std::vector<cv::Point> goal;
+  cv::Point goalCenter;
   std::vector<POI> POIs;
 
   float getWidth();
@@ -60,8 +61,7 @@ class Arena {
 
   bool findRobot(cv::Mat const &img, std::vector<double> &state);
 
-  bool getTopViewAt16cm(cv::Mat input, cv::Mat &output,
-                        bool debugView = false);
+  bool getTopViewAt16cm(cv::Mat input, cv::Mat &output, bool debugView = false);
 
   void getTopView(cv::Mat input, bool debugView = false);
 

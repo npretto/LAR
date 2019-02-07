@@ -30,6 +30,8 @@ CircumscribedObstacle PathFinder::poligonToCircle(vector<cv::Point> points) {
 
 // check che sia all'interno dell'arena e che sia fuori dagli ostacoli
 bool PathFinder::isPointValid(float x, float y, float buffer) {
+  if (norm(Point(x, y) - arena.goalCenter) < cmToPixels(15)) return true;
+
   if (!arena.isPointInside(x, y, buffer)) return false;
 
   for (CircumscribedObstacle o : obstacles) {
@@ -42,7 +44,7 @@ bool PathFinder::pathDoesNotCollide(vector<Point3f> points) {
   vector<bool> poisVisited;
 
   // for (const auto &p : points) {
-  for (int i = 0; i < points.size() - 10;
+  for (int i = 0; i < points.size();
        i++) {  // i don't check the last points becasue the goal is too close to
                // the boundaries
     const auto &p = points.at(i);
@@ -204,7 +206,6 @@ void PathFinder::fromArena(Arena &a) {
     createEdges(dist * 3.15);
   }
   cout<< "400" <<endl;
-
 }
 
 void PathFinder::drawMapOn(const cv::Mat &image) {

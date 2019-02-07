@@ -48,7 +48,7 @@ vector<Point3f> getDubinPath(const Point3f &a, const Point3f &b) {
   vector<Point3f> path;
   double q0[] = {a.x, a.y, a.z};
   double q1[] = {b.x, b.y, b.z};
-  ;
+
   DubinsPath p;
   dubins_shortest_path(&p, q0, q1, TURNING_RADIUS);
   // cout << "PATH ,,,,,,,,,,,,,,,,,,,," << endl;
