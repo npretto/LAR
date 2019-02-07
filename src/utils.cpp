@@ -12,7 +12,7 @@ void dilate(const cv::Mat &image, int size) {
   cv::dilate(image, image, kernel);
 }
 
-void erode(const cv::Mat &image, int size ) {
+void erode(const cv::Mat &image, int size) {
   cv::Mat kernel = cv::getStructuringElement(
       cv::MORPH_RECT, cv::Size((size * 2) + 1, (size * 2) + 1));
   cv::erode(image, image, kernel);
@@ -57,3 +57,26 @@ vector<Point3f> getDubinPath(const Point3f &a, const Point3f &b) {
 }
 
 float point2angle(Point p) { return atan2(p.y, p.x); }
+
+void filter(const cv::Mat &input, cv::Mat &output, string name) {
+  FileStorage fs;
+  fs.open(std::string("./filters/") + name + ".yml", FileStorage::READ);
+
+  // fs["iterationNr"] >> itNr;
+  auto node = fs["filter"];
+  if (!node.isNone()) {
+    vector<float> a, b;
+    node["low"] >> a;
+    node["high"] >> b;
+
+    cout << "> " << a[0] << " " << a[1] << " " << a[2] << endl;
+    cout << "> " << b[0] << " " << b[1] << " " << b[2] << endl;
+
+    cv::Scalar low(a[0], a[1], a[2]);
+    cv::Scalar high(b[0], b[1], b[2]);
+
+    cv::inRange(input, low, high, output);
+  } else {
+    cout << "   FILTER  DOESN'T FIND THE FILE " << endl;
+  }
+}

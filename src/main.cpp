@@ -12,7 +12,7 @@ bool SMART_NODES = false;
 float NODES_DISTANCE = cmToPixels(9);
 float MAP_HEIGHT = 150;  // 150cm
 float MAP_WIDTH = 100;   // 100cm
-float TURNING_RADIUS = cmToPixels(15);
+float TURNING_RADIUS = cmToPixels(10);
 
 float pixelToCm(float pixels) { return pixels / Arena::width * MAP_WIDTH; }
 float cmToPixels(float cm) { return cm / MAP_WIDTH * Arena::width; }
@@ -20,7 +20,7 @@ float cmToPixels(float cm) { return cm / MAP_WIDTH * Arena::width; }
 float safetyDistance = cmToPixels(3);
 float robotRadius = cmToPixels(7);
 
-//CalibratedCamera camera;
+// CalibratedCamera camera;
 Arena *arena;
 PathFinder *pf;
 
@@ -116,5 +116,3 @@ cv::Mat display;
 //   waitKey(0);
 //   return 0;
 // }
-
-

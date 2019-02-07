@@ -31,3 +31,7 @@ int printConfiguration(double q[3], double total, void *user_data);
 vector<Point3f> getDubinPath(const Point3f &a, const Point3f &b);
 
 float point2angle(Point p);
+
+void filter(const cv::Mat &input,cv::Mat &output, string name);
+
+
