@@ -193,6 +193,9 @@ void PathFinder::fromArena(Arena &a) {
     nodes.push_back(GraphNode{Point(poi.position.x, poi.position.y), true});
   }
 
+  nodes.push_back(
+      GraphNode{Point(arena.goalCenter.x, arena.goalCenter.y), true});
+
   if (SMART_NODES) {
     createSmartNodes();
     createNodes(dist);
@@ -393,10 +396,9 @@ vector<Point3f> PathFinder::simplify(vector<Point3f> vectors) {
   int index = rand() % (vectors.size() - 2);
 
   int start = index;
-  // int end = start + 1;
-  int end = start + 2 + rand() % (vectors.size() - start - 2);
+  // int end = start + 2 + rand() % (vectors.size() - start - 2);
 
-  end = start + 2;
+  int end = start + 2;
 
   // int tries = 0;
 
@@ -559,11 +561,12 @@ vector<Point3f> PathFinder::testClick(int x, int y, float direction) {
   }
 
   vectorFlattened.at(0).z = direction;
+  vectorFlattened.at(vectorFlattened.size() - 1).z = 0;
 
   dubinsPath = vectorsToDubins(vectorFlattened);
 
   cv::imshow("Arena parsed", display);
-  waitKey(1);
+  // waitKey(1);
 
   int tries = 0;
   while (!pathDoesNotCollide(dubinsPath) || tries < 50) {
@@ -585,7 +588,7 @@ vector<Point3f> PathFinder::testClick(int x, int y, float direction) {
     }
     // waitKey();
     cv::imshow("Arena parsed", display);
-    waitKey(1);
+    // waitKey(1);
 
     dubinsPath = vectorsToDubins(vectorFlattened);
   }
