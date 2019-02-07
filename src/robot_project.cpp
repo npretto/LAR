@@ -64,10 +64,25 @@ bool RobotProject::planPath(cv::Mat const& img, Path& path) {
 
   float distance = 0;
 
+  float oldAngle = 0;
+
   for (auto p : dubins) {
     distance += 10;
-    Pose pose(pixelToCm(distance) / 100, static_cast<double>(pixelToCm(p.x))/100,
-              -static_cast<double>(pixelToCm(p.y))/100, -static_cast<double>(p.z),
+
+    auto theta = -static_cast<double>(p.z);
+
+    auto k = 0;
+
+    if (theta > oldAngle) k = 1;
+
+    if (theta < oldAngle) k = -1;
+
+    k = k * (1 / 10) / 100;
+
+    oldAngle = theta;
+    Pose pose(pixelToCm(distance) / 100,
+              static_cast<double>(pixelToCm(p.x)) / 100,
+              -static_cast<double>(pixelToCm(p.y)) / 100, theta,
               static_cast<double>(0.0));  // positivo a sinistra
     points.push_back(pose);
   }
@@ -80,20 +95,18 @@ bool RobotProject::planPath(cv::Mat const& img, Path& path) {
 // Method invoked periodically to determine the position of the robot within
 // the map. The output state is a vector of three elements, x, y and theta.
 bool RobotProject::localize(cv::Mat const& img, std::vector<double>& state) {
-  //state.clear();
+  // state.clear();
 
   auto found = arena.findRobot(img, state);
 
-  if (found)
-  {
-    state[0] =  pixelToCm(state[0])/100.0;
-    state[1] = - pixelToCm(state[1])/100.0;
+  if (found) {
+    state[0] = pixelToCm(state[0]) / 100.0;
+    state[1] = -pixelToCm(state[1]) / 100.0;
     state[2] = -state[2];
   }
-  //state[3]=-state[3];
+  // state[3]=-state[3];
 
-
-  //state.push_back(state[0]);
+  // state.push_back(state[0]);
 
   return found;
 }
