@@ -9,6 +9,7 @@ float heuristic(GraphNode *start, GraphNode *end) {
   return cv::norm(start->center - end->center);
 }
 
+/// convert an obastacle to a circle that contains it
 CircumscribedObstacle PathFinder::poligonToCircle(vector<cv::Point> points) {
   cv::Point2f center(0.0f, 0.0f);
   for (auto p : points) {
@@ -30,7 +31,7 @@ CircumscribedObstacle PathFinder::poligonToCircle(vector<cv::Point> points) {
 
 // check che sia all'interno dell'arena e che sia fuori dagli ostacoli
 bool PathFinder::isPointValid(float x, float y, float buffer) {
-  if (norm(Point(x, y) - arena.goalCenter) < cmToPixels(15)) return true;
+  if (norm(Point(x, y) - arena.goalCenter) < cmToPixels(15)) return true; //if it's inside the goal it can go near the edges
 
   if (!arena.isPointInside(x, y, buffer)) return false;
 
@@ -40,13 +41,13 @@ bool PathFinder::isPointValid(float x, float y, float buffer) {
   return true;
 }
 
+/// checks if every point in a path is inside the arena
 bool PathFinder::pathDoesNotCollide(vector<Point3f> points) {
   vector<bool> poisVisited;
 
   // for (const auto &p : points) {
   for (int i = 0; i < points.size();
-       i++) {  // i don't check the last points becasue the goal is too close to
-               // the boundaries
+       i++) {  
     const auto &p = points.at(i);
     if (!isPointValid(p.x, p.y, robotRadius)) return false;
   }
@@ -82,6 +83,7 @@ bool PathFinder::pathVisitsAllPOIs(vector<Point3f> points) {
   return true;
 }
 
+/// create nodes for A* in a grid with cell size of distsance param
 void PathFinder::createNodes(float distance) {
   int cols = arena.getWidth() / distance;
   int rows = arena.getHeight() / distance;
@@ -162,6 +164,7 @@ void PathFinder::createSmartNodes() {
   // }
 }
 
+///create edges for obstacles that are at most `distance` far away
 void PathFinder::createEdges(float distance) {
   for (int i = 0; i < nodes.size(); i++) {
     for (int j = i; j < nodes.size(); j++) {
@@ -182,6 +185,7 @@ void PathFinder::createEdges(float distance) {
   }
 }
 
+/// create the pathfinder from an arena
 void PathFinder::fromArena(Arena &a) {
   arena = a;
   for (auto polygon : arena.obstacles) {
@@ -209,6 +213,7 @@ void PathFinder::fromArena(Arena &a) {
   cout << "400" << endl;
 }
 
+///draw the internal representation of the pathfinder on the image
 void PathFinder::drawMapOn(const cv::Mat &image) {
   // circles that contains obstacles
   for (CircumscribedObstacle obstacle : obstacles) {
@@ -295,6 +300,7 @@ vector<GraphNode *> PathFinder::getAStarPath(GraphNode *start,
   return path;
 }
 
+/// draw the map on the image
 void PathFinder::drawPath(Mat image) {
   //  VECTORS
   int i = 0;
@@ -394,6 +400,7 @@ vector<Point3f> PathFinder::vectorsToDubins(vector<Point3f> const &nodes) {
   return dubinsPath;
 }
 
+/// tries to simplify the path by removing un-necesserary nodes (has to be called many times, this function just try to do one step)
 vector<Point3f> PathFinder::simplify(vector<Point3f> vectors) {
   int index = rand() % (vectors.size() - 2);
 

@@ -4,6 +4,7 @@
 using namespace std;
 using namespace cv;
 
+/// get random color util
 cv::Scalar Arena::getColor()  // get "random" color to draw
 {
   static int i = 0;
@@ -16,6 +17,7 @@ cv::Scalar Arena::getColor()  // get "random" color to draw
 float Arena::getWidth() { return topView.cols; }
 float Arena::getHeight() { return topView.rows; }
 
+/// check if poing is inside the arena, buffer is the distance from the edges
 bool Arena::isPointInside(float x, float y, float buffer) {
   if (x < buffer || y < buffer) return false;
   if (x > (getWidth() - buffer)) return false;
@@ -24,6 +26,7 @@ bool Arena::isPointInside(float x, float y, float buffer) {
   return true;
 }
 
+//parse the input image, display = should show images
 bool Arena::parseImage(cv::Mat input, bool display) {
   obstacles.clear();
   goal.clear();
@@ -46,8 +49,11 @@ bool Arena::parseImage(cv::Mat input, bool display) {
   return true;
 }
 
+/// util function to sort pois alphabetically by the char
 bool Arena::comparePOI(const POI &p1, const POI &p2) { return p1.c < p2.c; }
 
+
+///looks for Points of interests, display flag for showing images for debug purposes
 void Arena::findPOIs(bool display) {
   cv::Mat green_mask;
 
@@ -94,6 +100,7 @@ void Arena::findPOIs(bool display) {
   }
 }
 
+/// looks for obstacles in the arena, display flag for showing images for debug purposes
 void Arena::findObstacles(bool display) {
   obstacles.clear();
 
@@ -136,7 +143,7 @@ void Arena::findObstacles(bool display) {
     if (DEBUG) cv::imshow("red_mask_eroded", red_mask);
   }
 }
-
+/// looks for the goal in the arena , display flag for showing images for debug purposes
 void Arena::findGoal(bool display) {
   cv::Mat blue_mask;
 
@@ -192,6 +199,7 @@ void Arena::findGoal(bool display) {
     if (DEBUG) cv::imshow("blue_mask_eroded", blue_mask);
 }
 
+///looks for the 4 white circles to parse the arena at the 16cm level, cropped/warped image is put in output
 bool Arena::getTopViewAt16cm(cv::Mat input, cv::Mat &output, bool debugView) {
   if (transform16cm.cols == 0) {
     cv::Mat topView_hsv, white_mask;
@@ -287,6 +295,7 @@ bool Arena::getTopViewAt16cm(cv::Mat input, cv::Mat &output, bool debugView) {
   return true;
 }
 
+/// looks for the topview cropped to the arena (inside sides of black tape) and stores it in topView
 void Arena::getTopView(cv::Mat input, bool debugView) {
   cv::Mat topView_hsv, black_mask;
   cv::cvtColor(input, topView_hsv, cv::COLOR_BGR2HSV);
@@ -431,6 +440,7 @@ void Arena::getTopView(cv::Mat input, bool debugView) {
   return;
 }
 
+/// draw the current map representation on the image param
 void Arena::drawMapOn(cv::Mat &image) {
   // DRAW POIs
   for (size_t i = 0; i < POIs.size(); i++) {
@@ -456,6 +466,7 @@ void Arena::drawMapOn(cv::Mat &image) {
   drawContours(image, a, -1, cv::Scalar(255, 20, 20), 3, cv::LINE_AA);
 }
 
+/// looks for the robot in img and puts the position in state
 bool Arena::findRobot(cv::Mat const &img, std::vector<double> &state) {
   const bool display = false;
   cout << " 10" << endl;
