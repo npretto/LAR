@@ -32,7 +32,6 @@ void DigitOCR::toBlackMask(cv::Mat input, cv::Mat &output) {
 
   cv::imshow("digit_mask_eroded", output);
   cv::moveWindow("digit_mask_eroded", 1100, 0);
-
 }
 
 void DigitOCR::init() {
@@ -61,8 +60,10 @@ char DigitOCR::parse(cv::Mat image) {
 
   int i = 0;
   const int step = 5;
+  cvWaitKey();
+
   // cout << "\n\n\nOCR\n\n\n";
-  while (i < 360 / step) {
+  while (i <= 360 / step) {
     cv::Mat rotated = black_mask.clone();
     auto r = cv::getRotationMatrix2D(
         cv::Point(rotated.cols / 2, rotated.rows / 2), step * i, 1);
@@ -87,7 +88,7 @@ char DigitOCR::parse(cv::Mat image) {
 
     // cv::imshow("digit_mask", rotated);
 
-    // cvWaitKey(100);
+    // cvWaitKey(300);
     i += step;
   }
 
@@ -95,6 +96,7 @@ char DigitOCR::parse(cv::Mat image) {
 
   confidence[' '] = 0;
   confidence['0'] = 0;
+  confidence['6'] = 0;
   confidence['7'] = 0;
   confidence['8'] = 0;
   confidence['9'] = 0;
@@ -110,8 +112,6 @@ char DigitOCR::parse(cv::Mat image) {
   }
 
   cout << "DETECTED " << c << endl;
-
-  cvWaitKey();
 
   return c;
 }

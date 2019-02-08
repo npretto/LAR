@@ -220,7 +220,7 @@ void PathFinder::drawMapOn(const cv::Mat &image) {
   // edges
   if (DRAW_EDGES) {
     for (Edge *e : edges) {
-      line(image, e->a->center, e->b->center, Scalar(120, 120, 120), 1);
+      line(image, e->a->center, e->b->center, Scalar(40, 40, 40), 1);
     }
   }
 
@@ -258,7 +258,7 @@ vector<GraphNode *> PathFinder::getAStarPath(GraphNode *start,
     }
     for (Edge *link : current->links) {
       if (DRAW_VISITED_EDGES) {
-        line(display, link->a->center, link->b->center, Scalar(120, 120, 120),
+        line(display, link->a->center, link->b->center, Scalar(255, 255, 255),
              2);
       }
 
@@ -313,17 +313,18 @@ void PathFinder::drawPath(Mat image) {
     }
   }
 
+  // cvWaitKey();
+
   // DUBINS PATH
   for (int i = 0; i < dubinsPath.size(); i++) {
     auto a = dubinsPath[i];
     Point2f b(a.x + cos(a.z) * 5, a.y + sin(a.z) * 5);
 
     circle(display, Point(a.x, a.y), 1, Scalar(255, 255, 255), 3, LINE_AA);
-    line(display, Point(a.x, a.y), b, Scalar(10, 10, 10), 4);
+    line(display, Point(a.x, a.y), b, Scalar(243, 213, 122), 4);
 
-    cv::imshow("Arena parsed", display);
+    // cv::imshow("Arena parsed", display);
     // cout << "WAIT" << endl;
-    // cvWaitKey(15);
   }
 }
 
@@ -569,7 +570,7 @@ vector<Point3f> PathFinder::testClick(int x, int y, float direction) {
   // waitKey(1);
 
   int tries = 0;
-  while (!pathDoesNotCollide(dubinsPath) || tries < 50) {
+  while (!pathDoesNotCollide(dubinsPath) || tries < 20) {
     tries++;
     cout << "simplify" << endl;
     vectorFlattened = simplify(vectorFlattened);
@@ -578,6 +579,8 @@ vector<Point3f> PathFinder::testClick(int x, int y, float direction) {
     arena.drawMapOn(display);
     drawMapOn(display);
     drawPath(display);
+    // cv::imshow("Arena parsed pre", display);
+
     for (auto vector : vectorFlattened) {
       const Scalar randColor(rand() * 255, rand() * 255, rand() * 255);
       const auto &a = vector;

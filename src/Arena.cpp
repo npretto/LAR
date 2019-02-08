@@ -203,7 +203,7 @@ bool Arena::getTopViewAt16cm(cv::Mat input, cv::Mat &output, bool debugView) {
 
     filter(topView_hsv, white_mask, "white-circles");
 
-    if (true) cv::imshow("gray_mask", white_mask);
+    if (false) cv::imshow("gray_mask", white_mask);
 
     // u::erode(white_mask, 8);
     // u::dilate(white_mask, 3);
@@ -233,7 +233,7 @@ bool Arena::getTopViewAt16cm(cv::Mat input, cv::Mat &output, bool debugView) {
              LINE_AA);
     }
 
-    if (true) cv::imshow("circles", circles_pic);
+    if (false) cv::imshow("circles", circles_pic);
 
     if (circles.size() != 4) return false;
 
@@ -449,13 +449,13 @@ void Arena::drawMapOn(cv::Mat &image) {
 }
 
 bool Arena::findRobot(cv::Mat const &img, std::vector<double> &state) {
-  const bool display = true;
+  const bool display = false;
   cout << " 10" << endl;
 
   cv::Mat topViewRobotAt16(img.rows, img.cols, CV_8UC3, Scalar(100, 100, 100));
   cout << " 20" << endl;
 
-  getTopViewAt16cm(img, topViewRobotAt16);
+  getTopViewAt16cm(img, topViewRobotAt16, false);
   cout << " 30" << endl;
 
   cv::imshow("topViewRobotAt16", topViewRobotAt16);
