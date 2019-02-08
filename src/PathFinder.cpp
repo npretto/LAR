@@ -69,11 +69,12 @@ bool PathFinder::pathVisitsAllPOIs(vector<Point3f> points) {
     }
   }
 
+ if(DEBUG){
   cout << "VISITED: ";
   for (auto i = poisVisited.begin(); i != poisVisited.end(); ++i)
     std::cout << (*i ? 1 : 0) << ' ';
   cout << endl;
-
+}
   for (bool visited : poisVisited) {
     if (!visited) return false;
   }
@@ -308,7 +309,7 @@ void PathFinder::drawPath(Mat image) {
 
       putText(display, to_string(i++), Point(vector.x, vector.y),
               FONT_HERSHEY_COMPLEX_SMALL, 1, cvScalar(0, 0, 0), 2, CV_AA);
-      cv::imshow("Arena parsed", display);
+      if (DEBUG) cv::imshow("Arena parsed", display);
       // cvWaitKey();
     }
   }
@@ -323,7 +324,7 @@ void PathFinder::drawPath(Mat image) {
     circle(display, Point(a.x, a.y), 1, Scalar(255, 255, 255), 3, LINE_AA);
     line(display, Point(a.x, a.y), b, Scalar(243, 213, 122), 4);
 
-    // cv::imshow("Arena parsed", display);
+    // if(DEBUG) cv::imshow("Arena parsed", display);
     // cout << "WAIT" << endl;
   }
 }
@@ -430,15 +431,19 @@ vector<Point3f> PathFinder::simplify(vector<Point3f> vectors) {
     //     }
     //   }
     // } */
-  printf("------------\n ");
-  printf("attempting from %i to %i , size? %i \n", start, end, vectors.size());
+
+  if (DEBUG) printf("------------\n ");
+  if (DEBUG)
+    printf("attempting from %i to %i , size? %i \n", start, end,
+           vectors.size());
 
   attempt = getDubinPath(vectors[start], vectors[end]);
 
   isValid = pathDoesNotCollide(attempt);
 
-  printf("attempting from %i to %i , valid? %i \n", start, end,
-         isValid ? 1 : 0);
+  if (DEBUG)
+    printf("attempting from %i to %i , valid? %i \n", start, end,
+           isValid ? 1 : 0);
 
   // } while (!isValid && (end < nodes.size() || start > 0) && tries < 2);
 
@@ -446,21 +451,24 @@ vector<Point3f> PathFinder::simplify(vector<Point3f> vectors) {
   if (isValid) {
     auto copy = vectors;
 
-    cout << "path is valid, trying to erase, " << start << " -> " << end
-         << endl;
+    if (DEBUG)
+      cout << "path is valid, trying to erase, " << start << " -> " << end
+           << endl;
 
     const int a = start + 1;
     const int b = end;
-    printf("vectors.erase(vectors.begin() + %i, vectors.begin() + %i);", a, b);
+    if (DEBUG)
+      printf("vectors.erase(vectors.begin() + %i, vectors.begin() + %i);", a,
+             b);
     vectors.erase(vectors.begin() + a, vectors.begin() + b);
 
-    cout << "erased, now vectors.size() :" << vectors.size() << endl;
+    if (DEBUG) cout << "erased, now vectors.size() :" << vectors.size() << endl;
 
     if (!pathVisitsAllPOIs(vectors)) {
-      cout << "NOT VISITING EVRYTHING" << endl;
+      if (DEBUG) cout << "NOT VISITING EVRYTHING" << endl;
       vectors = copy;
     } else {
-      cout << "YES  ------ VISITING EVRYTHING" << endl;
+      if (DEBUG) cout << "YES  ------ VISITING EVRYTHING" << endl;
     }
   }
 
@@ -510,7 +518,7 @@ vector<Point3f> PathFinder::testClick(int x, int y, float direction) {
 
   //   line(display, a, b, Scalar(255, 255, 255), 3);
 
-  //   cv::imshow("Arena parsed", display);
+  //   if(DEBUG) cv::imshow("Arena parsed", display);
   //   cvWaitKey();
   // }
 
@@ -566,20 +574,20 @@ vector<Point3f> PathFinder::testClick(int x, int y, float direction) {
 
   dubinsPath = vectorsToDubins(vectorFlattened);
 
-  cv::imshow("Arena parsed", display);
+  if (DEBUG) cv::imshow("Arena parsed", display);
   // waitKey(1);
 
   int tries = 0;
   while (!pathDoesNotCollide(dubinsPath) || tries < 20) {
     tries++;
-    cout << "simplify" << endl;
+    if(DEBUG)cout << "simplify" << endl;
     vectorFlattened = simplify(vectorFlattened);
 
     display = Scalar(15, 15, 15);
     arena.drawMapOn(display);
-    drawMapOn(display);
-    drawPath(display);
-    // cv::imshow("Arena parsed pre", display);
+    if (DEBUG) drawMapOn(display);
+    if (DEBUG) drawPath(display);
+    // if(DEBUG) cv::imshow("Arena parsed pre", display);
 
     for (auto vector : vectorFlattened) {
       const Scalar randColor(rand() * 255, rand() * 255, rand() * 255);
@@ -590,7 +598,7 @@ vector<Point3f> PathFinder::testClick(int x, int y, float direction) {
              LINE_AA);
     }
     // waitKey();
-    cv::imshow("Arena parsed", display);
+    if (DEBUG) cv::imshow("Arena parsed", display);
     // waitKey(1);
 
     dubinsPath = vectorsToDubins(vectorFlattened);
@@ -600,6 +608,7 @@ vector<Point3f> PathFinder::testClick(int x, int y, float direction) {
   arena.drawMapOn(display);
   // drawMapOn(display);
   drawPath(display);
+  cv::imshow("Arena parsed", display);
 
   // dubinsPath = partialDubins;
 
@@ -625,7 +634,7 @@ vector<Point3f> PathFinder::testClick(int x, int y, float direction) {
   //              5, LINE_AA);
   //     }
 
-  //     cv::imshow("Arena parsed", display);
+  //     if(DEBUG) cv::imshow("Arena parsed", display);
   //     waitKey();
 
   //     partialDubins = vectorsToDubins(v);

@@ -56,7 +56,8 @@ void Arena::findPOIs(bool display) {
   //             cv::Scalar(color + 15, 255, 255), green_mask);
   filter(topView_hsv, green_mask, "pois");
 
-  if (display) cv::imshow("green_mask", green_mask);
+  if (display)
+    if (DEBUG) cv::imshow("green_mask", green_mask);
 
   u::erode(green_mask, 5);
   u::dilate(green_mask, 1);
@@ -89,7 +90,7 @@ void Arena::findPOIs(bool display) {
   // }
 
   if (display) {
-    cv::imshow("green_mask_eroded", green_mask);
+    if (DEBUG) cv::imshow("green_mask_eroded", green_mask);
   }
 }
 
@@ -110,7 +111,8 @@ void Arena::findObstacles(bool display) {
               cv::Scalar(180, 255, 255), red_mask2);
   red_mask = red_mask | red_mask2;
 
-  if (display) cv::imshow("red_mask", red_mask);
+  if (display)
+    if (DEBUG) cv::imshow("red_mask", red_mask);
   u::erode(red_mask, 2);
   // u::dilateErode(red_mask);
   // u::erode(red_mask, 2);
@@ -131,7 +133,7 @@ void Arena::findObstacles(bool display) {
   }
 
   if (display) {
-    cv::imshow("red_mask_eroded", red_mask);
+    if (DEBUG) cv::imshow("red_mask_eroded", red_mask);
   }
 }
 
@@ -142,7 +144,8 @@ void Arena::findGoal(bool display) {
   //             cv::Scalar(220 / 2 + 25, 255, 255), blue_mask);
   filter(topView_hsv, blue_mask, "goal");
 
-  if (display) cv::imshow("blue_mask", blue_mask);
+  if (display)
+    if (DEBUG) cv::imshow("blue_mask", blue_mask);
 
   u::dilateErode(blue_mask);
 
@@ -185,7 +188,8 @@ void Arena::findGoal(bool display) {
   drawContours(topViewAnnotated, a, -1, cv::Scalar(20, 20, 255), 2,
                cv::LINE_AA);
 
-  if (display) cv::imshow("blue_mask_eroded", blue_mask);
+  if (display)
+    if (DEBUG) cv::imshow("blue_mask_eroded", blue_mask);
 }
 
 bool Arena::getTopViewAt16cm(cv::Mat input, cv::Mat &output, bool debugView) {
@@ -203,7 +207,8 @@ bool Arena::getTopViewAt16cm(cv::Mat input, cv::Mat &output, bool debugView) {
 
     filter(topView_hsv, white_mask, "white-circles");
 
-    if (false) cv::imshow("gray_mask", white_mask);
+    if (false)
+      if (DEBUG) cv::imshow("gray_mask", white_mask);
 
     // u::erode(white_mask, 8);
     // u::dilate(white_mask, 3);
@@ -233,7 +238,8 @@ bool Arena::getTopViewAt16cm(cv::Mat input, cv::Mat &output, bool debugView) {
              LINE_AA);
     }
 
-    if (false) cv::imshow("circles", circles_pic);
+    if (false)
+      if (DEBUG) cv::imshow("circles", circles_pic);
 
     if (circles.size() != 4) return false;
 
@@ -276,7 +282,7 @@ bool Arena::getTopViewAt16cm(cv::Mat input, cv::Mat &output, bool debugView) {
 
   cv::warpPerspective(input, output, transform16cm, cv::Size(width, height));
 
-  // imshow("topViewAt16cm", output);
+  // if(DEBUG) imshow("topViewAt16cm", output);
 
   return true;
 }
@@ -288,7 +294,8 @@ void Arena::getTopView(cv::Mat input, bool debugView) {
   cv::inRange(topView_hsv, cv::Scalar(0, 0, 0), cv::Scalar(180, 255, 80),
               black_mask);
 
-  if (debugView) cv::imshow("BLACK_filter", black_mask);
+  if (debugView)
+    if (DEBUG) cv::imshow("BLACK_filter", black_mask);
 
   // Find contours
   std::vector<std::vector<cv::Point>> contours, approximation;
@@ -326,7 +333,8 @@ void Arena::getTopView(cv::Mat input, bool debugView) {
     if (debugView) {
       drawContours(contours_img, approximation, -1, getColor(), 2, cv::LINE_AA);
     }
-    if (debugView) cv::imshow("contours_img", contours_img);
+    if (debugView)
+      if (DEBUG) cv::imshow("contours_img", contours_img);
     // cvWaitKey();
 
     double area = contourArea(contours[i]);
@@ -351,7 +359,7 @@ void Arena::getTopView(cv::Mat input, bool debugView) {
   std::vector<std::vector<cv::Point>> const a = {arena_approx};
 
   // drawContours(contours_img, a, -1, getColor(), 20, cv::LINE_AA);
-  // cv::imshow("contours_img", contours_img);
+  // if(DEBUG) cv::imshow("contours_img", contours_img);
 
   cout << "arena_approx.size: " << arena_approx.size() << endl;
 
@@ -458,7 +466,7 @@ bool Arena::findRobot(cv::Mat const &img, std::vector<double> &state) {
   getTopViewAt16cm(img, topViewRobotAt16, false);
   cout << " 30" << endl;
 
-  cv::imshow("topViewRobotAt16", topViewRobotAt16);
+  if (DEBUG) cv::imshow("topViewRobotAt16", topViewRobotAt16);
   cv::Mat hsv, blue_mask;
   cout << " 40" << endl;
 
@@ -471,7 +479,8 @@ bool Arena::findRobot(cv::Mat const &img, std::vector<double> &state) {
 
   filter(hsv, blue_mask, "robot");
 
-  if (display) cv::imshow("blue_mask", blue_mask);
+  if (display)
+    if (DEBUG) cv::imshow("blue_mask", blue_mask);
 
   // cvWaitKey(0);
 
@@ -490,8 +499,10 @@ bool Arena::findRobot(cv::Mat const &img, std::vector<double> &state) {
                cv::LINE_AA);
   cout << " robot_projecte.cpp 03" << endl;
 
-  if (display) cv::imshow("topViewRobotAt16", topViewRobotAt16);
-  if (display) cv::imshow("blue_mask_eroded", blue_mask);
+  if (display)
+    if (DEBUG) cv::imshow("topViewRobotAt16", topViewRobotAt16);
+  if (display)
+    if (DEBUG) cv::imshow("blue_mask_eroded", blue_mask);
 
   // cvWaitKey(0);
 
@@ -506,7 +517,8 @@ bool Arena::findRobot(cv::Mat const &img, std::vector<double> &state) {
     if (display)
       drawContours(topViewRobotAt16, approximation, -1, cv::Scalar(20, 20, 255),
                    1, cv::LINE_AA);
-    if (display) cv::imshow("topViewRobotAt16", topViewRobotAt16);
+    if (display)
+      if (DEBUG) cv::imshow("topViewRobotAt16", topViewRobotAt16);
 
     double area = contourArea(contours[i]);
     cout << "> " << approx_curve.size() << "  " << area << endl;
@@ -516,7 +528,8 @@ bool Arena::findRobot(cv::Mat const &img, std::vector<double> &state) {
     }
   }
   cout << " robot_projecte.cpp 50" << endl;
-  if (display) cv::imshow("topViewRobotAt16", topViewRobotAt16);
+  if (display)
+    if (DEBUG) cv::imshow("topViewRobotAt16", topViewRobotAt16);
   // cvWaitKey(0);
 
   std::vector<std::vector<cv::Point>> a = {robot};
@@ -559,7 +572,8 @@ bool Arena::findRobot(cv::Mat const &img, std::vector<double> &state) {
     if (display)
       circle(topViewRobotAt16, front, 3, Scalar(120, 255, 120), 3, LINE_AA);
 
-    if (display) cv::imshow("topViewRobotAt16", topViewRobotAt16);
+    if (display)
+      if (DEBUG) cv::imshow("topViewRobotAt16", topViewRobotAt16);
 
     // cvWaitKey(0);
     // cvWaitKey(0);

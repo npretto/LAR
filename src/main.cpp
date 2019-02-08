@@ -19,6 +19,7 @@ float cmToPixels(float cm) { return cm / MAP_WIDTH * Arena::width; }
 
 float safetyDistance = cmToPixels(3);
 float robotRadius = cmToPixels(7);
+bool DEBUG = false;
 
 // CalibratedCamera camera;
 Arena *arena;
@@ -38,7 +39,7 @@ cv::Mat display;
 //   pf->drawMapOn(display);
 //   pf->drawPath(display);
 
-//   cv::imshow("Arena parsed", display);
+//   if(DEBUG) cv::imshow("Arena parsed", display);
 
 //   cout << "." << endl;
 // }
@@ -78,7 +79,7 @@ cv::Mat display;
 //     // camera.undistort(image, image);
 //     arena->parseImage(image);
 //     cout << "ARENA PARSED without crashing" << endl;
-//     cv::imshow("Arena", arena->topView);
+//     if(DEBUG) cv::imshow("Arena", arena->topView);
 
 //     cv::Mat display = arena->topView;
 //     // cv::Mat display(arena.topView.rows, arena.topView.cols, CV_8UC3,
@@ -86,14 +87,14 @@ cv::Mat display;
 //     cout << "ARENA . DRAW MAP ON " << endl;
 //     arena->drawMapOn(display);
 
-//     cv::imshow("Arena parsed", display);
+//     if(DEBUG) cv::imshow("Arena parsed", display);
 
 //     // cvWaitKey();
 
 //     pf->fromArena(*arena);
 //     pf->drawMapOn(display);
 
-//     // cv::imshow("Arena parsed", display);
+//     // if(DEBUG) cv::imshow("Arena parsed", display);
 
 //     // setMouseCallback("Arena parsed", onMouse, 0);
 //     cout << "CLICK" << endl;

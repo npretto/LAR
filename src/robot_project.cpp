@@ -11,6 +11,10 @@ using namespace std;
 //   PathFinder pf;
 
 RobotProject::RobotProject(int argc, char* argv[]) {
+  cout << argc << endl;
+  if (argc > 1) {
+    DEBUG = true;
+  }
   cout << "CONSTRUCTTOR OF ROBOT PROJECT " << endl;
 }
 
@@ -23,7 +27,7 @@ bool RobotProject::preprocessMap(cv::Mat const& img) {
 
   cout << "arena parsed from image" << endl;
 
-  cv::imshow("Arena", arena.topView);
+  if (DEBUG) cv::imshow("Arena", arena.topView);
 
   return true;
 }
@@ -33,17 +37,13 @@ bool RobotProject::preprocessMap(cv::Mat const& img) {
 bool RobotProject::planPath(cv::Mat const& img, Path& path) {
   cv::Mat a(arena.topView.rows, arena.topView.cols, CV_8UC3,
             Scalar(100, 100, 100));
-  cout << "RobotProject::planPath" << endl;
 
   display = a;
-  cout << "RobotProject::planPath3" << endl;
 
   pf.fromArena(arena);
-  cout << "RobotProject::planPath 4" << endl;
 
   pf.drawMapOn(display);
-  cv::imshow("Arena pf", display);
-  cout << "RobotProject::planPath 5" << endl;
+  if (DEBUG) cv::imshow("Arena pf", display);
 
   std::vector<double> state;
   if (!arena.findRobot(img, state)) {
@@ -58,7 +58,7 @@ bool RobotProject::planPath(cv::Mat const& img, Path& path) {
                                         state.at(1) + dist * cos(theta), theta);
 
   pf.drawMapOn(display);
-  cv::imshow("Arena with path", display);
+  if (DEBUG) cv::imshow("Arena with path", display);
 
   std::vector<Pose> points;
 
@@ -77,11 +77,10 @@ bool RobotProject::planPath(cv::Mat const& img, Path& path) {
 
     if (theta < oldAngle) k = -1;
 
-    cout << k << endl;
+    if(DEBUG) cout << k << endl;
 
     k = k * (1 / 10) / 100;
 
-    cout << k << endl;
 
     oldAngle = theta;
     Pose pose(pixelToCm(distance) / 100,

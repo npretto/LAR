@@ -31,4 +31,6 @@ extern cv::Mat display;
 float pixelToCm(float pixels);
 float cmToPixels(float cm);
 
+extern bool DEBUG;
+
 #endif

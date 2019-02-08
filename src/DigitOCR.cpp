@@ -11,26 +11,26 @@ void DigitOCR::toBlackMask(cv::Mat input, cv::Mat &output) {
 
   cv::inRange(hsv, cv::Scalar(0, 0, 0), cv::Scalar(180, 255, 80), black);
   u::dilate(black, 2);
-  cv::imshow("black", black);
+  if (DEBUG) cv::imshow("black", black);
   cv::moveWindow("black", 800, 0);
   // FIND GREEN COLOR
   cv::inRange(hsv, cv::Scalar(130 / 2 - 10, 0, 40),
               cv::Scalar(130 / 2 + 10, 255, 255), green);
   u::erode(green, 3);
 
-  cv::imshow("green", green);
+  if (DEBUG) cv::imshow("green", green);
   cv::moveWindow("green", 900, 0);
 
   // REMOVE GREEN PARTS
   output = black - green;
 
-  cv::imshow("digit_mask", output);
+  if (DEBUG) cv::imshow("digit_mask", output);
   cv::moveWindow("digit_mask", 1000, 0);
 
   u::erode(output, 2);
   u::dilate(output, 2);
 
-  cv::imshow("digit_mask_eroded", output);
+  if (DEBUG) cv::imshow("digit_mask_eroded", output);
   cv::moveWindow("digit_mask_eroded", 1100, 0);
 }
 
@@ -48,7 +48,7 @@ void DigitOCR::init() {
 char DigitOCR::parse(cv::Mat image) {
   cv::Mat black_mask;
   toBlackMask(image, black_mask);
-  cv::imshow("digit", image);
+  if (DEBUG) cv::imshow("digit", image);
   cv::moveWindow("digit", 600, 0);
 
   ocr->SetImage(black_mask.data, black_mask.cols, black_mask.rows, 1,
@@ -60,7 +60,6 @@ char DigitOCR::parse(cv::Mat image) {
 
   int i = 0;
   const int step = 5;
-  cvWaitKey();
 
   // cout << "\n\n\nOCR\n\n\n";
   while (i <= 360 / step) {
@@ -84,9 +83,9 @@ char DigitOCR::parse(cv::Mat image) {
     // cout << "CONFIDENCE " << conf << endl;
     // cout << "TOTAL CONFIDENCE " << confidence[*detected] << endl;
 
-    // cv::imshow("digit_mask_eroded", rotated);
+    // if(DEBUG) cv::imshow("digit_mask_eroded", rotated);
 
-    // cv::imshow("digit_mask", rotated);
+    // if(DEBUG) cv::imshow("digit_mask", rotated);
 
     // cvWaitKey(300);
     i += step;
@@ -108,7 +107,7 @@ char DigitOCR::parse(cv::Mat image) {
       max = x.second;
       c = x.first;
     }
-    std::cout << x.first << ':' << x.second << std::endl;
+    if (DEBUG) std::cout << x.first << ':' << x.second << std::endl;
   }
 
   cout << "DETECTED " << c << endl;
