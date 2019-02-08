@@ -52,8 +52,10 @@ void Arena::findPOIs(bool display) {
   cv::Mat green_mask;
 
   const int color = 150 / 2;
-  cv::inRange(topView_hsv, cv::Scalar(color - 15, 60, 10),
-              cv::Scalar(color + 15, 255, 255), green_mask);
+  // cv::inRange(topView_hsv, cv::Scalar(color - 15, 60, 10),
+  //             cv::Scalar(color + 15, 255, 255), green_mask);
+  filter(topView_hsv, green_mask, "pois");
+
   if (display) cv::imshow("green_mask", green_mask);
 
   u::erode(green_mask, 5);
@@ -195,8 +197,11 @@ bool Arena::getTopViewAt16cm(cv::Mat input, cv::Mat &output, bool debugView) {
     // 255),
     //             white_mask);
 
-    cv::inRange(topView_hsv, cv::Scalar(70, 0, 150), cv::Scalar(240, 70, 255),
-                white_mask);
+    // cv::inRange(topView_hsv, cv::Scalar(70, 0, 150), cv::Scalar(240, 70,
+    // 255),
+    //             white_mask);
+
+    filter(topView_hsv, white_mask, "white-circles");
 
     if (true) cv::imshow("gray_mask", white_mask);
 

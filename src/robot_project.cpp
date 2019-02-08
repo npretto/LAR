@@ -71,19 +71,23 @@ bool RobotProject::planPath(cv::Mat const& img, Path& path) {
 
     auto theta = -static_cast<double>(p.z);
 
-    auto k = 0;
+    double k = 0;
 
     if (theta > oldAngle) k = 1;
 
     if (theta < oldAngle) k = -1;
 
+    cout << k << endl;
+
     k = k * (1 / 10) / 100;
+
+    cout << k << endl;
 
     oldAngle = theta;
     Pose pose(pixelToCm(distance) / 100,
               static_cast<double>(pixelToCm(p.x)) / 100,
               -static_cast<double>(pixelToCm(p.y)) / 100, theta,
-              static_cast<double>(0.0));  // positivo a sinistra
+              k);  // positivo a sinistra
     points.push_back(pose);
   }
 
